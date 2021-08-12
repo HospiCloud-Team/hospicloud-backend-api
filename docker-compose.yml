@@ -1,0 +1,23 @@
+version: '3'
+services:
+    appointments:
+        container_name: appointments
+        build: ./appointments
+        environment:
+            - PORT=8080
+        ports:
+            - 8080:8080
+    checkups:
+        container_name: checkups
+        build: ./checkups
+        environment:
+            - PORT=8081
+        ports:
+            - 8081:8081
+    users:
+        container_name: users
+        build: ./users
+        environment:
+            - PORT=8082
+        ports:
+            - 8082:8082
