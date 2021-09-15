@@ -1,9 +1,11 @@
 import enum
 import datetime
-from sqlalchemy import Column, ForeignKey, Table
+from sqlalchemy import Column, ForeignKey, Table, engine
 from sqlalchemy.sql.sqltypes import Boolean, Time
 from sqlalchemy.types import JSON, DateTime, Date, CHAR, Enum, Integer, String
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
@@ -129,15 +131,6 @@ class BloodType(enum.Enum):
     ab_minus = 8
 
 
-class Patient(Base):
-    __tablename__ = "patient"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("user.id"))
-    user = relationship("User", back_populates="user", uselist=False)
-    id_blood_type = Column(Enum(BloodType))
-    medical_background = Column(String)
-
-
 class Specialty(Base):
     __tablename__ = "specialty"
     id = Column(Integer, primary_key=True)
@@ -188,10 +181,19 @@ class User(Base):
     name = Column(String)
     last_name = Column(String)
     password = Column(String)
-    email = Column(String)
+    email = Column(String, unique=True)
     document_number: Column(CHAR(length=11))
     date_of_birth = Column(Date)
     created_at = Column(DateTime, default=datetime.datetime.now())
     created_by = Column(Integer, ForeignKey("user.id"))
     updated_at = Column(DateTime)
     updated_by = Column(Integer, ForeignKey("user.id"))
+
+
+class Patient(Base):
+    __tablename__ = "patient"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user: User = relationship("User", back_populates="user", uselist=False)
+    id_blood_type = Column(Enum(BloodType))
+    medical_background = Column(String)
