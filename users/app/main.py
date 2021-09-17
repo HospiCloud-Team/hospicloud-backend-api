@@ -1,14 +1,14 @@
 from fastapi import FastAPI, status
 from starlette.responses import JSONResponse
 
-from users.app.routers import users
+from routers import patient
 
 app = FastAPI(
     title="Users",
     description="Users service for HospiCloud app.",
 )
 
-app.include_router(users.router)
+app.include_router(patient.router)
 
 
 @app.get("/")

@@ -1,7 +1,9 @@
 import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, constr
 from common.models import UserRole, DocumentType
+
 
 class UserBase(BaseModel):
     user_role: UserRole
@@ -11,11 +13,13 @@ class UserBase(BaseModel):
     email: EmailStr
     document_number: constr(max_length=11)
     date_of_birth: datetime.date
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+    created_at = datetime.datetime.now()
+    updated_at: Optional[datetime.datetime] = None
+
 
 class UserIn(UserBase):
     password: str
+
 
 class User(UserBase):
     id: int
@@ -24,4 +28,3 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
-

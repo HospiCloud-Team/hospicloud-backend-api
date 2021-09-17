@@ -1,7 +1,7 @@
 import bcrypt
 
-from users.app.dependencies import Session
-from users.app.schemas.patient import PatientIn
+from dependencies import Session
+from schemas.patient import PatientIn
 from common.models import Patient, User
 
 
@@ -19,7 +19,7 @@ def create_patient(db: Session, patient: PatientIn) -> Patient:
 
     patient.user.password = hashed_password
 
-    new_patient: Patient = Patient(**patient.dict())
+    new_patient: Patient = Patient(patient.dict())
 
     db.add(new_patient)
     db.commit()
