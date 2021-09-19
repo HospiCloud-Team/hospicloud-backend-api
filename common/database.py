@@ -1,6 +1,5 @@
 import os
 from sqlalchemy import create_engine
-from .models import Base
 
 
 def start_engine():
@@ -9,9 +8,6 @@ def start_engine():
     db_password = os.getenv("DB_PASSWORD", "password")
     db_name = os.getenv("DB_NAME", "postgres")
 
-    engine = create_engine(f"postgresql://{db_user}:{db_password}@{db_host}/{db_name}")
+    engine = create_engine(
+        f"postgresql://{db_user}:{db_password}@{db_host}/{db_name}", echo=True)
     return engine
-
-
-def create_tables(engine):
-    Base.metadata.create_all(engine)

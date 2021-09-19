@@ -1,11 +1,11 @@
 import enum
 import datetime
-from sqlalchemy import Column, ForeignKey, Table, engine
+from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.sql.sqltypes import Boolean, Time
 from sqlalchemy.types import JSON, DateTime, Date, CHAR, Enum, Integer, String
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from common.database import start_engine
 
 Base = declarative_base()
 
@@ -197,3 +197,13 @@ class Patient(Base):
     user: User = relationship("User", back_populates="user", uselist=False)
     id_blood_type = Column(Enum(BloodType))
     medical_background = Column(String)
+
+
+engine = start_engine()
+
+SessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine)
+
+
+def create_tables():
+    Base.metadata.create_all(engine)
