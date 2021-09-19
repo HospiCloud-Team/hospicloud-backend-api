@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
-
 from pydantic import BaseModel, EmailStr, constr
+
 from common.models import UserRole, DocumentType
 
 

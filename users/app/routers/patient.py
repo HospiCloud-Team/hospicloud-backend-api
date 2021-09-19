@@ -1,13 +1,15 @@
-from users.app.schemas.patient import PatientIn, Patient
 from fastapi import APIRouter, Depends, HTTPException
 
-from dependencies import get_db, Session
 import storage
+from schemas.patient import PatientIn, Patient
+from dependencies import get_db, Session, create_tables
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
 )
+
+create_tables()
 
 
 @router.post("/patients/", response_model=Patient)
