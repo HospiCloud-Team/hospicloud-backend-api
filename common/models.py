@@ -226,17 +226,6 @@ class BaseUser(Base):
     created_at = Column(DateTime, default=datetime.datetime.now())
     updated_at = Column(DateTime)
 
-    # doctor = relationship(
-    #     "Doctor",
-    #     back_populates="base_user",
-    #     uselist=False
-    # )
-    # admin = relationship(
-    #     "Admin",
-    #     back_populates="base_user",
-    #     uselist=False
-    # )
-
 
 engine = start_engine()
 
@@ -252,8 +241,3 @@ def _compile_drop_table(element, compiler, **kwargs):
 def create_tables():
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
-
-
-@compiles(DropTable, "postgresql")
-def _compile_drop_table(element, compiler, **kwargs):
-    return compiler.visit_drop_table(element) + " CASCADE"

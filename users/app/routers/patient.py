@@ -14,7 +14,11 @@ create_tables()
 
 @router.post("/patients/", response_model=Patient)
 def create_user(patient: PatientIn, db: Session = Depends(get_db)):
-    return storage.create_patient(db, patient)
+    try:
+        return storage.create_patient(db, patient)
+    except Exception:
+        raise HTTPException(
+            status_code=500, detail="Internal server error, try again later")
 
 
 @router.get("/patients/{patient_id}", response_model=Patient)

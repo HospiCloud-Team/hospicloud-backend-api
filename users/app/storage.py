@@ -1,8 +1,10 @@
 import bcrypt
+import traceback
+from fastapi.encoders import jsonable_encoder
 
 from dependencies import Session
 from schemas.patient import PatientIn
-from common.models import Patient, User
+from common.models import Patient, BaseUser
 
 
 def get_patient(db: Session, patient_id: int) -> Patient:
@@ -19,13 +21,21 @@ def create_patient(db: Session, patient: PatientIn) -> Patient:
 
     patient.user.password = hashed_password
 
-    new_patient: Patient = Patient(patient.dict())
+    try:
+        db_user = BaseUser(**patient.user.dict())
+        db_patient = Patient(
+            user=db_user,
+            blood_type=patient.blood_type.value,
+            medical_background=patient.medical_background
+        )
 
-    db.add(new_patient)
-    db.commit()
-    db.refresh(new_patient)
+        db.add(db_patient)
+        db.commit()
+        db.refresh(db_patient)
 
-    return new_patient
+        return db_patient
+    except Exception as e:
+        raise Exception(f'Unexpected error: {e}')
 
 
 def delete_patient(db: Session, patient_id: int) -> Patient:
