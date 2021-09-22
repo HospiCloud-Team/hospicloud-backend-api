@@ -1,8 +1,19 @@
 import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr, constr
+from enum import Enum
 
-from common.models import UserRole, DocumentType
+from pydantic import BaseModel, EmailStr
+
+
+class UserRole(str, Enum):
+    admin = "admin"
+    doctor = "doctor"
+    patient = "patient"
+
+
+class DocumentType(str, Enum):
+    national_id = "national_id"
+    passport = "passport"
 
 
 class UserBase(BaseModel):
@@ -11,9 +22,9 @@ class UserBase(BaseModel):
     name: str
     last_name: str
     email: EmailStr
-    document_number: constr(max_length=11)
+    document_number: str
     date_of_birth: datetime.date
-    created_at = datetime.datetime.now()
+    created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
 
 
@@ -23,8 +34,6 @@ class UserIn(UserBase):
 
 class User(UserBase):
     id: int
-    created_by: int
-    update_by: int
 
     class Config:
         orm_mode = True
