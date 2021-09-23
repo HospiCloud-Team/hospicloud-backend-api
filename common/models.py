@@ -12,144 +12,144 @@ from common.database import start_engine
 
 Base = declarative_base()
 
-doctor_to_specialty_association = Table(
-    "doctor_specialty",
-    Base.metadata,
-    Column("doctor_id", ForeignKey("doctor.id")),
-    Column("specialty_id", ForeignKey("specialty.id")),
-)
+# doctor_to_specialty_association = Table(
+#     "doctor_specialty",
+#     Base.metadata,
+#     Column("doctor_id", ForeignKey("doctor.id")),
+#     Column("specialty_id", ForeignKey("specialty.id")),
+# )
 
-hospital_to_specialty_association = Table(
-    "hospital_specialty",
-    Base.metadata,
-    Column("hospital_id", ForeignKey("hospital.id")),
-    Column("specialty_id", ForeignKey("specialty.id")),
-)
-
-
-class Admin(Base):
-    __tablename__ = "admin"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("base_user.id"))
-    hospital_id = Column(Integer, ForeignKey("hospital.id"))
-
-    user = relationship(
-        "BaseUser",
-        uselist=False
-    )
+# hospital_to_specialty_association = Table(
+#     "hospital_specialty",
+#     Base.metadata,
+#     Column("hospital_id", ForeignKey("hospital.id")),
+#     Column("specialty_id", ForeignKey("specialty.id")),
+# )
 
 
-class Checkup(Base):
-    __tablename__ = "checkup"
-    id = Column(Integer, primary_key=True)
-    template_id = Column(Integer, ForeignKey("template.id"))
-    doctor_id = Column(Integer, ForeignKey("doctor.id"))
-    patient_id = Column(Integer, ForeignKey("patient.id"))
-    data = Column(JSON)
-    date = Column(DateTime, default=datetime.datetime.now())
+# class Admin(Base):
+#     __tablename__ = "admin"
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey("base_user.id"))
+#     hospital_id = Column(Integer, ForeignKey("hospital.id"))
+
+#     user = relationship(
+#         "BaseUser",
+#         uselist=False
+#     )
 
 
-class Province(enum.Enum):
-    azua = 1
-    bahoruco = 2
-    barahona = 3
-    dajabon = 4
-    distrito_nacional = 5
-    duarte = 6
-    elias_pina = 7
-    el_seibo = 8
-    espaillat = 9
-    hato_mayor = 10
-    hermanas_mirabal = 11
-    independencia = 12
-    la_altagracia = 13
-    la_romana = 14
-    la_vega = 15
-    maria_trinidad_sanchez = 16
-    monsenor_nouel = 17
-    monte_cristi = 18
-    monte_plata = 19
-    pedernales = 20
-    peravia = 21
-    puerto_plata = 22
-    samana = 23
-    sanchez_ramirez = 24
-    san_cristobal = 25
-    san_jose_de_ocoa = 26
-    san_juan = 27
-    san_pedro_de_macoris = 28
-    santiago = 29
-    santiago_rodriguez = 30
-    santo_domingo = 31
-    valverde = 32
+# class Checkup(Base):
+#     __tablename__ = "checkup"
+#     id = Column(Integer, primary_key=True)
+#     template_id = Column(Integer, ForeignKey("template.id"))
+#     doctor_id = Column(Integer, ForeignKey("doctor.id"))
+#     patient_id = Column(Integer, ForeignKey("patient.id"))
+#     data = Column(JSON)
+#     date = Column(DateTime, default=datetime.datetime.now())
 
 
-class City(Base):
-    __tablename__ = "city"
-    id = Column(Integer, primary_key=True)
-    province = Column(Enum(Province))
-    address = Column(String(length=250))
+# class Province(enum.Enum):
+#     azua = 1
+#     bahoruco = 2
+#     barahona = 3
+#     dajabon = 4
+#     distrito_nacional = 5
+#     duarte = 6
+#     elias_pina = 7
+#     el_seibo = 8
+#     espaillat = 9
+#     hato_mayor = 10
+#     hermanas_mirabal = 11
+#     independencia = 12
+#     la_altagracia = 13
+#     la_romana = 14
+#     la_vega = 15
+#     maria_trinidad_sanchez = 16
+#     monsenor_nouel = 17
+#     monte_cristi = 18
+#     monte_plata = 19
+#     pedernales = 20
+#     peravia = 21
+#     puerto_plata = 22
+#     samana = 23
+#     sanchez_ramirez = 24
+#     san_cristobal = 25
+#     san_jose_de_ocoa = 26
+#     san_juan = 27
+#     san_pedro_de_macoris = 28
+#     santiago = 29
+#     santiago_rodriguez = 30
+#     santo_domingo = 31
+#     valverde = 32
 
 
-class Hospital(Base):
-    __tablename__ = "hospital"
-    id = Column(Integer, primary_key=True)
-    location_id = Column(Integer, ForeignKey("location.id"))
-    schedule_id = Column(Integer, ForeignKey("schedule.id"))
-    name = Column(String)
-    created_at = Column(DateTime, default=datetime.datetime.now())
-    created_by = Column(Integer, ForeignKey("base_user.id"))
-    updated_at = Column(DateTime)
-    updated_by = Column(Integer, ForeignKey("base_user.id"))
-
-    specialties = relationship(
-        "Specialty",
-        secondary=hospital_to_specialty_association,
-        back_populates="specialties"
-    )
+# class City(Base):
+#     __tablename__ = "city"
+#     id = Column(Integer, primary_key=True)
+#     province = Column(Enum(Province))
+#     address = Column(String(length=250))
 
 
-class Doctor(Base):
-    __tablename__ = "doctor"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("base_user.id"))
-    hospital_id = Column(Integer, ForeignKey("hospital.id"))
-    schedule_id = Column(Integer, ForeignKey("schedule.id"))
+# class Hospital(Base):
+#     __tablename__ = "hospital"
+#     id = Column(Integer, primary_key=True)
+#     location_id = Column(Integer, ForeignKey("location.id"))
+#     schedule_id = Column(Integer, ForeignKey("schedule.id"))
+#     name = Column(String)
+#     created_at = Column(DateTime, default=datetime.datetime.now())
+#     created_by = Column(Integer, ForeignKey("base_user.id"))
+#     updated_at = Column(DateTime)
+#     updated_by = Column(Integer, ForeignKey("base_user.id"))
 
-    specialties = relationship(
-        "Specialty",
-        secondary=doctor_to_specialty_association,
-        back_populates="doctors"
-    )
-    user = relationship(
-        "BaseUser",
-        uselist=False
-    )
-
-
-class Specialty(Base):
-    __tablename__ = "specialty"
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-
-    parents = relationship(
-        "Doctor",
-        secondary=doctor_to_specialty_association,
-        back_populates="specialties"
-    )
-
-    hospitals = relationship(
-        "Hospital",
-        secondary=hospital_to_specialty_association,
-        back_populates="hospitals"
-    )
+#     specialties = relationship(
+#         "Specialty",
+#         secondary=hospital_to_specialty_association,
+#         back_populates="specialties"
+#     )
 
 
-class Location(Base):
-    __tablename__ = "location"
-    id = Column(Integer, primary_key=True)
-    city_id = Column(Integer, ForeignKey("city.id"))
-    address = Column(String)
+# class Doctor(Base):
+#     __tablename__ = "doctor"
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey("base_user.id"))
+#     hospital_id = Column(Integer, ForeignKey("hospital.id"))
+#     schedule_id = Column(Integer, ForeignKey("schedule.id"))
+
+#     specialties = relationship(
+#         "Specialty",
+#         secondary=doctor_to_specialty_association,
+#         back_populates="doctors"
+#     )
+#     user = relationship(
+#         "BaseUser",
+#         uselist=False
+#     )
+
+
+# class Specialty(Base):
+#     __tablename__ = "specialty"
+#     id = Column(Integer, primary_key=True)
+#     name = Column(String)
+
+#     parents = relationship(
+#         "Doctor",
+#         secondary=doctor_to_specialty_association,
+#         back_populates="specialties"
+#     )
+
+#     hospitals = relationship(
+#         "Hospital",
+#         secondary=hospital_to_specialty_association,
+#         back_populates="hospitals"
+#     )
+
+
+# class Location(Base):
+#     __tablename__ = "location"
+#     id = Column(Integer, primary_key=True)
+#     city_id = Column(Integer, ForeignKey("city.id"))
+#     address = Column(String)
 
 
 class BloodType(str, enum.Enum):
@@ -163,29 +163,29 @@ class BloodType(str, enum.Enum):
     ab_minus = "ab_minus"
 
 
-class Template(Base):
-    __tablename__ = "template"
-    id = Column(Integer, primary_key=True)
-    specialty_id = Column(Integer, ForeignKey("specialty.id"))
-    hospital_id = Column(Integer, ForeignKey("hospital.id"))
-    numeric_fields = Column(Integer)
-    alphanumeric_fields = Column(Integer)
-    file_upload_fields = Column(Integer)
-    headers = Column(JSON)
-    created_at = Column(DateTime, default=datetime.datetime.now())
-    created_by = Column(Integer, ForeignKey("base_user.id"))
-    updated_at = Column(DateTime)
-    updated_by = Column(Integer, ForeignKey("base_user.id"))
+# class Template(Base):
+#     __tablename__ = "template"
+#     id = Column(Integer, primary_key=True)
+#     specialty_id = Column(Integer, ForeignKey("specialty.id"))
+#     hospital_id = Column(Integer, ForeignKey("hospital.id"))
+#     numeric_fields = Column(Integer)
+#     alphanumeric_fields = Column(Integer)
+#     file_upload_fields = Column(Integer)
+#     headers = Column(JSON)
+#     created_at = Column(DateTime, default=datetime.datetime.now())
+#     created_by = Column(Integer, ForeignKey("base_user.id"))
+#     updated_at = Column(DateTime)
+#     updated_by = Column(Integer, ForeignKey("base_user.id"))
 
 
-class Schedule(Base):
-    __tablename__ = "schedule"
-    id = Column(Integer, primary_key=True)
-    start_day = Column(String)
-    end_day = Column(String)
-    start_time = Column(Time)
-    end_time = Column(Time)
-    all_day = Column(Boolean, default=False)
+# class Schedule(Base):
+#     __tablename__ = "schedule"
+#     id = Column(Integer, primary_key=True)
+#     start_day = Column(String)
+#     end_day = Column(String)
+#     start_time = Column(Time)
+#     end_time = Column(Time)
+#     all_day = Column(Boolean, default=False)
 
 
 class UserRole(str, enum.Enum):
@@ -208,7 +208,8 @@ class Patient(Base):
 
     user = relationship(
         "BaseUser",
-        uselist=False
+        uselist=False,
+        cascade="all"
     )
 
 

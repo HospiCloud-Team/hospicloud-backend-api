@@ -48,7 +48,7 @@ def create_patient(db: Session, patient: PatientIn) -> Patient:
 
 
 def delete_patient(db: Session, patient_id: int) -> Patient:
-    patient = db.query(Patient).get(patient_id)
+    patient = db.get(Patient, patient_id)
     if not patient:
         return None
 
