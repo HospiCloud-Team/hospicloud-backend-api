@@ -1,6 +1,5 @@
 import bcrypt
 import traceback
-from fastapi.encoders import jsonable_encoder
 
 from dependencies import Session
 from schemas.patient import PatientIn
@@ -11,8 +10,16 @@ def get_patient(db: Session, patient_id: int) -> Patient:
     return db.query(Patient).filter(Patient.id == patient_id).first()
 
 
+def get_patients(db: Session) -> Patient:
+    return db.query(Patient).all()
+
+
 def get_patient_by_email(db: Session, email: str) -> Patient:
-    return db.query(Patient).filter(Patient.user.email == email).first()
+    try:
+        return db.query(BaseUser).filter(BaseUser.email == email).first()
+    except Exception as e:
+        print(traceback.format_exc())
+        raise Exception(f'Unexpected error: {e}')
 
 
 def create_patient(db: Session, patient: PatientIn) -> Patient:
@@ -35,6 +42,8 @@ def create_patient(db: Session, patient: PatientIn) -> Patient:
 
         return db_patient
     except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
         raise Exception(f'Unexpected error: {e}')
 
 
@@ -43,7 +52,12 @@ def delete_patient(db: Session, patient_id: int) -> Patient:
     if not patient:
         return None
 
-    db.delete(patient)
-    db.commit()
+    try:
+        db.delete(patient)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
+        raise Exception(f'Unexpected error: {e}')
 
     return patient
