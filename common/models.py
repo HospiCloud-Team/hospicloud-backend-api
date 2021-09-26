@@ -103,7 +103,7 @@ class Hospital(Base):
     specialties = relationship(
         "Specialty",
         secondary=hospital_to_specialty_association,
-        back_populates="specialties"
+        back_populates="hospitals"
     )
 
 
@@ -130,7 +130,7 @@ class Specialty(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
 
-    parents = relationship(
+    doctors = relationship(
         "Doctor",
         secondary=doctor_to_specialty_association,
         back_populates="specialties"
@@ -139,7 +139,7 @@ class Specialty(Base):
     hospitals = relationship(
         "Hospital",
         secondary=hospital_to_specialty_association,
-        back_populates="hospitals"
+        back_populates="specialties"
     )
 
 
@@ -225,6 +225,7 @@ class BaseUser(Base):
     updated_at = Column(DateTime)
 
     patient = relationship("Patient", back_populates="user", uselist=False)
+    doctor = relationship("Doctor", back_populates="user", uselist=False)
     admin = relationship("Admin", back_populates="user", uselist=False)
 
 
