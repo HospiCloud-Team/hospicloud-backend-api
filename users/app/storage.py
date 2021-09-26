@@ -4,7 +4,7 @@ from typing import List
 
 from dependencies import Session
 from schemas.user import User, UserIn, UserRole
-from common.models import Patient, BaseUser
+from common.models import Patient, BaseUser, Admin
 from utils import generate_password
 
 
@@ -18,6 +18,28 @@ def create_patient(db: Session, user: UserIn) -> User:
 
         db.add(db_user)
         db.add(db_patient)
+
+        db.commit()
+        db.refresh(db_user)
+
+        return db_user
+    except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
+        raise Exception(f'Unexpected error: {e}')
+
+
+def create_admin(db: Session, user: UserIn) -> User:
+    random_password = generate_password().encode("utf-8")
+    hashed_password = bcrypt.hashpw(random_password, bcrypt.gensalt())
+
+    try:
+        db_user = BaseUser(
+            **user.dict(exclude={"admin"}), password=hashed_password)
+        db_admin = Admin(**user.admin.dict(), user=db_user)
+
+        db.add(db_user)
+        db.add(db_admin)
 
         db.commit()
         db.refresh(db_user)
