@@ -4,6 +4,8 @@ from enum import Enum
 
 from pydantic import BaseModel, EmailStr
 
+from schemas.patient import PatientIn, Patient
+
 
 class UserRole(str, Enum):
     admin = "admin"
@@ -29,11 +31,12 @@ class UserBase(BaseModel):
 
 
 class UserIn(UserBase):
-    password: str
+    patient: Optional[PatientIn] = None
 
 
 class User(UserBase):
     id: int
+    patient: Optional[Patient] = None
 
     class Config:
         orm_mode = True

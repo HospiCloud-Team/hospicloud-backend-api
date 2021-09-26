@@ -3,8 +3,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from schemas.user import UserIn, User
-
 
 class BloodType(str, Enum):
     a_plus = "a_plus"
@@ -23,12 +21,11 @@ class PatientBase(BaseModel):
 
 
 class PatientIn(PatientBase):
-    user: UserIn
+    pass
 
 
 class Patient(PatientBase):
     id: int
-    user: User
 
     class Config:
         orm_mode = True
