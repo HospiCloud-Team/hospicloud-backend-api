@@ -1,20 +1,46 @@
 import bcrypt
 import traceback
+from typing import List
 
 from dependencies import Session
-from schemas.patient import PatientIn
+from schemas.user import User, UserIn, UserRole
 from common.models import Patient, BaseUser
+from utils import generate_password
 
 
-def get_patient(db: Session, patient_id: int) -> Patient:
-    return db.query(Patient).filter(Patient.id == patient_id).first()
+def create_patient(db: Session, user: UserIn) -> User:
+    random_password = generate_password().encode("utf-8")
+    hashed_password = bcrypt.hashpw(random_password, bcrypt.gensalt())
+
+    try:
+        db_user = BaseUser(**user.dict(exclude={"patient"}), password=hashed_password)
+        db_patient = Patient(**user.patient.dict(), user=db_user)
+
+        db.add(db_user)
+        db.add(db_patient)
+
+        db.commit()
+        db.refresh(db_user)
+
+        return db_user
+    except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
+        raise Exception(f'Unexpected error: {e}')
 
 
-def get_patients(db: Session) -> Patient:
-    return db.query(Patient).all()
+def get_user(db: Session, user_id: int) -> User:
+    return db.query(BaseUser).filter(BaseUser.id == user_id).first()
 
 
-def get_patient_by_email(db: Session, email: str) -> Patient:
+def get_users(db: Session, user_role: UserRole) -> List[User]:
+    if user_role:
+        return db.query(BaseUser).filter(BaseUser.user_role == user_role.value).all()
+
+    return db.query(BaseUser).all()
+
+
+def get_user_by_email(db: Session, email: str) -> User:
     try:
         return db.query(BaseUser).filter(BaseUser.email == email).first()
     except Exception as e:
@@ -22,42 +48,17 @@ def get_patient_by_email(db: Session, email: str) -> Patient:
         raise Exception(f'Unexpected error: {e}')
 
 
-def create_patient(db: Session, patient: PatientIn) -> Patient:
-    encoded_password = patient.user.password.encode("utf-8")
-    hashed_password = bcrypt.hashpw(encoded_password, bcrypt.gensalt())
-
-    patient.user.password = hashed_password
-
-    try:
-        db_user = BaseUser(**patient.user.dict())
-        db_patient = Patient(
-            user=db_user,
-            blood_type=patient.blood_type.value,
-            medical_background=patient.medical_background
-        )
-
-        db.add(db_patient)
-        db.commit()
-        db.refresh(db_patient)
-
-        return db_patient
-    except Exception as e:
-        db.rollback()
-        print(traceback.format_exc())
-        raise Exception(f'Unexpected error: {e}')
-
-
-def delete_patient(db: Session, patient_id: int) -> Patient:
-    patient = db.get(Patient, patient_id)
-    if not patient:
+def delete_user(db: Session, user_id: int) -> User:
+    user = db.get(BaseUser, user_id)
+    if not user:
         return None
 
     try:
-        db.delete(patient)
+        db.delete(user)
         db.commit()
     except Exception as e:
         db.rollback()
         print(traceback.format_exc())
         raise Exception(f'Unexpected error: {e}')
 
-    return patient
+    return user
