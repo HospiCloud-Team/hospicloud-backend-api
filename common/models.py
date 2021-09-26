@@ -98,9 +98,7 @@ class Hospital(Base):
     schedule_id = Column(Integer, ForeignKey("schedule.id"))
     name = Column(String)
     created_at = Column(DateTime, default=datetime.datetime.now())
-    created_by = Column(Integer, ForeignKey("base_user.id"))
     updated_at = Column(DateTime)
-    updated_by = Column(Integer, ForeignKey("base_user.id"))
 
     specialties = relationship(
         "Specialty",
@@ -227,6 +225,7 @@ class BaseUser(Base):
     updated_at = Column(DateTime)
 
     patient = relationship("Patient", back_populates="user", uselist=False)
+    admin = relationship("Admin", back_populates="user", uselist=False)
 
 
 engine = start_engine()
