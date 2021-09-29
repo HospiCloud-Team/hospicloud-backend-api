@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List
-from schemas.checkups import CheckupIn
+from common.schemas.checkup import CheckupIn
 from common.models import Checkup
 
 
@@ -21,7 +21,6 @@ def create_checkup(db: Session, checkup: CheckupIn) -> Checkup:
 
     db.add(new_checkup)
     db.commit()
-    db.refresh(new_checkup)
 
     return new_checkup
 
