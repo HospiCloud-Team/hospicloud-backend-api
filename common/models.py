@@ -41,6 +41,8 @@ class Checkup(Base):
     patient_id = Column(Integer, ForeignKey("patient.id"))
     data = Column(JSON)
     date = Column(DateTime, default=datetime.datetime.now())
+    patient = relationship("Patient", back_populates="checkups")
+    doctor = relationship("Doctor", back_populates="checkups")
 
 
 class Province(enum.Enum):
@@ -95,6 +97,7 @@ class Doctor(Base):
     specialties = relationship(
         "Specialty", secondary=doctor_to_specialty_association, back_populates="doctors"
     )
+    checkups = relationship("Checkup")
 
 
 class Hospital(Base):
@@ -139,6 +142,7 @@ class Patient(Base):
     user = relationship("User", uselist=False)
     id_blood_type = Column(Enum(BloodType))
     medical_background = Column(String)
+    checkups = relationship("Checkup")
 
 
 class Specialty(Base):
@@ -213,5 +217,5 @@ def _compile_drop_table(element, compiler, **kwargs):
 
 
 def create_tables():
-    Base.metadata.drop_all(engine)
+    #Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
