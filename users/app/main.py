@@ -39,6 +39,8 @@ def create_user(user: UserIn, db: Session = Depends(get_db)):
             return storage.create_patient(db, user)
         elif user.user_role == UserRole.admin:
             return storage.create_admin(db, user)
+        else:
+            return storage.create_doctor(db, user)
 
     except Exception:
         print(traceback.format_exc())

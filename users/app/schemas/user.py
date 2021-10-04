@@ -6,6 +6,7 @@ from pydantic import BaseModel, EmailStr
 
 from schemas.patient import PatientIn, Patient
 from schemas.admin import Admin, AdminBase
+from schemas.doctor import Doctor, DoctorIn
 
 
 class UserRole(str, Enum):
@@ -34,12 +35,14 @@ class UserBase(BaseModel):
 class UserIn(UserBase):
     patient: Optional[PatientIn] = None
     admin: Optional[AdminBase] = None
+    doctor: Optional[DoctorIn] = None
 
 
 class User(UserBase):
     id: int
     patient: Optional[Patient] = None
     admin: Optional[Admin] = None
+    doctor: Optional[Doctor] = None
 
     class Config:
         orm_mode = True
