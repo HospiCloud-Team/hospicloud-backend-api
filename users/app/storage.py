@@ -4,8 +4,15 @@ from typing import List
 
 from dependencies import Session
 from schemas.user import User, UserIn, UserRole
-from common.models import Patient, BaseUser, Admin, Doctor, Specialty
+from common.models import Base, Patient, BaseUser, Admin, Doctor, Specialty
 from utils import generate_password
+
+ALLOWED_USER_UPDATES = ["name", "last_name",
+                        "date_of_birth", "document_number"]
+
+ALLOWED_PATIENT_UPDATES = ["medical_background"]
+
+ALLOWED_DOCTOR_UPDATES = ["schedule_id", "specialty_ids"]
 
 
 def create_patient(db: Session, user: UserIn) -> User:
@@ -62,9 +69,8 @@ def create_doctor(db: Session, user: UserIn) -> User:
         db_doctor = Doctor(
             **user.doctor.dict(exclude={"specialty_ids"}), user=db_user)
 
-        result = db.query(Specialty).filter(Specialty.id.in_([user.doctor.specialty_ids]))
-
-        print(f'result: {result}')
+        db.query(Specialty).filter(
+            Specialty.id.in_([user.doctor.specialty_ids]))
 
         db.add(db_user)
         db.add(db_doctor)
@@ -112,3 +118,33 @@ def delete_user(db: Session, user_id: int) -> User:
         raise Exception(f'Unexpected error: {e}')
 
     return user
+
+
+def update_user(db: Session, user_id: int, updated_user: User) -> User:
+    user = db.get(BaseUser, user_id)
+    if not user:
+        return None
+
+    try:
+        for key, value in dict(updated_user).items():
+            if key is not None and key in ALLOWED_USER_UPDATES:
+                setattr(user, key, value)
+
+        if updated_user.patient is not None:
+            for key, value in dict(updated_user.patient).items():
+                if key is not None and key in ALLOWED_PATIENT_UPDATES:
+                    setattr(user.patient, key, value)
+
+        if updated_user.doctor is not None:
+            for key, value in dict(updated_user.doctor).items():
+                if key is not None and key in ALLOWED_DOCTOR_UPDATES:
+                    setattr(user.doctor, key, value)
+
+        db.commit()
+        db.refresh(user)
+
+        return user
+    except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
+        raise Exception(f'Unexpected error: {e}')

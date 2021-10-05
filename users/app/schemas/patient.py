@@ -23,6 +23,9 @@ class PatientBase(BaseModel):
 class PatientIn(PatientBase):
     pass
 
+class PatientUpdate(BaseModel):
+    medical_background: Optional[str] = None
+
 
 class Patient(PatientBase):
     id: int

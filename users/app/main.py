@@ -5,7 +5,7 @@ from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
 
 import storage
-from schemas.user import UserIn, User, UserRole
+from schemas.user import UserIn, User, UserRole, UserUpdate
 from dependencies import get_db, Session, create_tables
 
 app = FastAPI(
@@ -66,6 +66,24 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
         )
 
     return db_user
+
+
+@app.put("/users/{user_id}", response_model=User, status_code=status.HTTP_200_OK, response_model_exclude_none=True)
+def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
+    try:
+        db_user = storage.update_user(db, user_id, user)
+        if db_user is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"message": "User not found"}
+            )
+
+        return db_user
+    except Exception:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal server error, try again later"}
+        )
 
 
 @app.delete("/users/{user_id}", response_model=User, status_code=status.HTTP_200_OK, response_model_exclude_none=True)

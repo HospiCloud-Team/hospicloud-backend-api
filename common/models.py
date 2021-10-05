@@ -2,6 +2,7 @@ import enum
 import datetime
 
 from sqlalchemy import Column, ForeignKey, Table
+from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import Boolean, Time
 from sqlalchemy.schema import DropTable
 from sqlalchemy.ext.compiler import compiles
@@ -221,8 +222,8 @@ class BaseUser(Base):
     email = Column(String, unique=True)
     document_number = Column(String(11))
     date_of_birth = Column(Date)
-    created_at = Column(DateTime, default=datetime.datetime.now())
-    updated_at = Column(DateTime)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
 
     patient = relationship("Patient", back_populates="user", uselist=False)
     doctor = relationship("Doctor", back_populates="user", uselist=False)

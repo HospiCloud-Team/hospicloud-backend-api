@@ -4,9 +4,9 @@ from enum import Enum
 
 from pydantic import BaseModel, EmailStr
 
-from schemas.patient import PatientIn, Patient
+from schemas.patient import PatientIn, Patient, PatientUpdate
 from schemas.admin import Admin, AdminBase
-from schemas.doctor import Doctor, DoctorIn
+from schemas.doctor import Doctor, DoctorIn, DoctorUpdate
 
 
 class UserRole(str, Enum):
@@ -36,6 +36,16 @@ class UserIn(UserBase):
     patient: Optional[PatientIn] = None
     admin: Optional[AdminBase] = None
     doctor: Optional[DoctorIn] = None
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    last_name: Optional[str] = None
+    document_number: Optional[str] = None
+    date_of_birth: datetime.date
+
+    patient: Optional[PatientUpdate] = None
+    doctor: Optional[DoctorUpdate] = None
 
 
 class User(UserBase):
