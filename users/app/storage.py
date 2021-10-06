@@ -69,14 +69,16 @@ def create_doctor(db: Session, user: UserIn) -> User:
         db_doctor = Doctor(
             **user.doctor.dict(exclude={"specialty_ids"}), user=db_user)
 
-        db.query(Specialty).filter(
-            Specialty.id.in_([user.doctor.specialty_ids]))
+        specialties = db.query(Specialty).filter(
+            Specialty.id.in_(user.doctor.specialty_ids)).all()
+
+        db_doctor.specialties = specialties
 
         db.add(db_user)
         db.add(db_doctor)
-        db.commit()
 
-        db.refresh(db_user)
+        db.commit()
+        db.refresh(db_doctor)
 
         return db_user
     except Exception as e:

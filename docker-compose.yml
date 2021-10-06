@@ -1,27 +1,27 @@
 version: '3'
 services:
-    templates:
-        container_name: templates
-        depends_on: 
-            - postgres-db
-        build: 
-            context: ./
-            dockerfile: templates/Dockerfile
-        environment:
-            - PORT=8080
-        ports:
-            - 8080:8080
-    checkups:
-        container_name: checkups
-        depends_on: 
-            - postgres-db
-        build: 
-            context: ./
-            dockerfile: checkups/Dockerfile
-        environment:
-            - PORT=8081
-        ports:
-            - 8081:8081
+    # templates:
+    #     container_name: templates
+    #     depends_on: 
+    #         - postgres-db
+    #     build: 
+    #         context: ./
+    #         dockerfile: templates/Dockerfile
+    #     environment:
+    #         - PORT=8080
+    #     ports:
+    #         - 8080:8080
+    # checkups:
+    #     container_name: checkups
+    #     depends_on: 
+    #         - postgres-db
+    #     build: 
+    #         context: ./
+    #         dockerfile: checkups/Dockerfile
+    #     environment:
+    #         - PORT=8081
+    #     ports:
+    #         - 8081:8081
     users:
         container_name: users
         depends_on: 
