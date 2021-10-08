@@ -42,7 +42,7 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     last_name: Optional[str] = None
     document_number: Optional[str] = None
-    date_of_birth: datetime.date
+    date_of_birth: Optional[datetime.date] = None
 
     patient: Optional[PatientUpdate] = None
     doctor: Optional[DoctorUpdate] = None

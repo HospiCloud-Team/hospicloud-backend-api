@@ -1,4 +1,5 @@
 import bcrypt
+import datetime
 import traceback
 from typing import List
 
@@ -107,7 +108,7 @@ def get_user_by_email(db: Session, email: str) -> User:
 
 
 def delete_user(db: Session, user_id: int) -> User:
-    user = db.get(BaseUser, user_id)
+    user = get_user(db, user_id)
     if not user:
         return None
 
@@ -123,24 +124,25 @@ def delete_user(db: Session, user_id: int) -> User:
 
 
 def update_user(db: Session, user_id: int, updated_user: User) -> User:
-    user = db.get(BaseUser, user_id)
+    user = get_user(db, user_id)
     if not user:
         return None
 
     try:
         for key, value in dict(updated_user).items():
-            if key is not None and key in ALLOWED_USER_UPDATES:
+            if do_key_and_value_exist(key, value) and key in ALLOWED_USER_UPDATES:
                 setattr(user, key, value)
 
         if updated_user.patient is not None:
             for key, value in dict(updated_user.patient).items():
-                if key is not None and key in ALLOWED_PATIENT_UPDATES:
+                if do_key_and_value_exist(key, value) and key in ALLOWED_PATIENT_UPDATES:
                     setattr(user.patient, key, value)
-
-        if updated_user.doctor is not None:
+        elif updated_user.doctor is not None:
             for key, value in dict(updated_user.doctor).items():
-                if key is not None and key in ALLOWED_DOCTOR_UPDATES:
+                if do_key_and_value_exist(key, value) and key in ALLOWED_DOCTOR_UPDATES:
                     setattr(user.doctor, key, value)
+
+        user.updated_at = datetime.datetime.now()
 
         db.commit()
         db.refresh(user)
@@ -150,3 +152,7 @@ def update_user(db: Session, user_id: int, updated_user: User) -> User:
         db.rollback()
         print(traceback.format_exc())
         raise Exception(f'Unexpected error: {e}')
+
+
+def do_key_and_value_exist(key, value) -> bool:
+    return key is not None and value is not None
