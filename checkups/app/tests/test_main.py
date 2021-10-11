@@ -19,8 +19,35 @@ def test_add_checkup(test_db):
     }
     response = client.post("/checkups/", json=payload)
     data = response.json()
-    print(data)
     assert response.status_code == 201
     assert data["doctor"]["id"] == 1
     assert data["patient"]["id"] == 1
     assert data["data"] == "{'test':'test'}"
+
+
+def test_get_checkups_by_patient(test_db):
+    payload = {
+        "data": "{'test':'test'}",
+        "doctor_id": 1,
+        "patient_id": 1,
+        "template_id": 1,
+    }
+    client.post("/checkups/", json=payload)
+    response = client.get("/checkups/patient/1")
+    data = response.json()
+    assert response.status_code == 200
+    assert len(data) > 0
+
+
+def test_get_checkups_by_doctor(test_db):
+    payload = {
+        "data": "{'test':'test'}",
+        "doctor_id": 1,
+        "patient_id": 1,
+        "template_id": 1,
+    }
+    client.post("/checkups/", json=payload)
+    response = client.get("/checkups/doctor/1")
+    data = response.json()
+    assert response.status_code == 200
+    assert len(data) > 0
