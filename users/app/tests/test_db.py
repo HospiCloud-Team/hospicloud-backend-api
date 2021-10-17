@@ -5,7 +5,7 @@ import pytest
 
 
 from common.database import start_engine
-from common.models import Base, Hospital, BaseUser, Patient, Specialty, Schedule
+from common.models import Base, Hospital, User, Patient, Specialty, Schedule
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -30,7 +30,7 @@ def test_db():
 
     db = TestingSessionLocal()
 
-    patient_user = BaseUser(
+    patient_user = User(
         user_role="patient",
         document_type="national_id",
         name="test",

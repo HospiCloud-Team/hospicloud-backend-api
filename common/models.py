@@ -31,11 +31,11 @@ hospital_to_specialty_association = Table(
 class Admin(Base):
     __tablename__ = "admin"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("base_user.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
 
     user = relationship(
-        "BaseUser",
+        "User",
         uselist=False
     )
 
@@ -111,7 +111,7 @@ class Hospital(Base):
 class Doctor(Base):
     __tablename__ = "doctor"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("base_user.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
     schedule_id = Column(Integer, ForeignKey("schedule.id"))
 
@@ -121,7 +121,7 @@ class Doctor(Base):
         back_populates="doctors"
     )
     user = relationship(
-        "BaseUser",
+        "User",
         uselist=False
     )
 
@@ -172,9 +172,9 @@ class Template(Base):
     file_upload_fields = Column(Integer)
     headers = Column(JSON)
     created_at = Column(DateTime, default=datetime.datetime.now())
-    created_by = Column(Integer, ForeignKey("base_user.id"))
+    created_by = Column(Integer, ForeignKey("user.id"))
     updated_at = Column(DateTime)
-    updated_by = Column(Integer, ForeignKey("base_user.id"))
+    updated_by = Column(Integer, ForeignKey("user.id"))
 
 
 class Schedule(Base):
@@ -201,18 +201,18 @@ class DocumentType(str, enum.Enum):
 class Patient(Base):
     __tablename__ = "patient"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("base_user.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
     blood_type = Column(Enum(BloodType))
     medical_background = Column(String)
 
     user = relationship(
-        "BaseUser",
+        "User",
         back_populates="patient"
     )
 
 
-class BaseUser(Base):
-    __tablename__ = "base_user"
+class User(Base):
+    __tablename__ = "user"
     id = Column(Integer, primary_key=True)
     user_role = Column(Enum(UserRole))
     document_type = Column(Enum(DocumentType))
