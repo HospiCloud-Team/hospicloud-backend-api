@@ -1,9 +1,12 @@
 import enum
 import datetime
+from .database import start_engine
+from sqlalchemy.schema import DropTable
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.sql.sqltypes import Boolean, Time
 from sqlalchemy.types import JSON, DateTime, Date, CHAR, Enum, Integer, String
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 Base = declarative_base()
 
@@ -26,7 +29,7 @@ class Admin(Base):
     __tablename__ = "admin"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
-    user = relationship("User", back_populates="user", uselist=False)
+    user = relationship("User", uselist=False)
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
 
 
@@ -38,6 +41,8 @@ class Checkup(Base):
     patient_id = Column(Integer, ForeignKey("patient.id"))
     data = Column(JSON)
     date = Column(DateTime, default=datetime.datetime.now())
+    patient = relationship("Patient", back_populates="checkups")
+    doctor = relationship("Doctor", back_populates="checkups")
 
 
 class Province(enum.Enum):
@@ -86,12 +91,13 @@ class Doctor(Base):
     __tablename__ = "doctor"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
-    user = relationship("User", back_populates="user", uselist=False)
+    user = relationship("User", uselist=False)
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
     schedule_id = Column(Integer, ForeignKey("schedule.id"))
     specialties = relationship(
         "Specialty", secondary=doctor_to_specialty_association, back_populates="doctors"
     )
+    checkups = relationship("Checkup")
 
 
 class Hospital(Base):
@@ -102,7 +108,7 @@ class Hospital(Base):
     name = Column(String)
     specialties = relationship(
         "Specialty",
-        secondary=doctor_to_specialty_association,
+        secondary=hospital_to_specialty_association,
         back_populates="hospitals",
     )
     created_at = Column(DateTime, default=datetime.datetime.now())
@@ -118,30 +124,33 @@ class Location(Base):
     address = Column(String)
 
 
-class BloodType(enum.Enum):
-    a_plus = 1
-    a_minus = 2
-    b_plus = 3
-    b_minus = 4
-    o_plus = 5
-    o_minus = 6
-    ab_plus = 7
-    ab_minus = 8
+class BloodType(str, enum.Enum):
+    a_plus = "a_plus"
+    a_minus = "a_minus"
+    b_plus = "b_plus"
+    b_minus = "b_minus"
+    o_plus = "o_plus"
+    o_minus = "o_minus"
+    ab_plus = "ab_plus"
+    ab_minus = "ab_minus"
 
 
 class Patient(Base):
     __tablename__ = "patient"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
-    user = relationship("User", back_populates="user", uselist=False)
+    user = relationship("User", uselist=False)
     id_blood_type = Column(Enum(BloodType))
     medical_background = Column(String)
+    checkups = relationship("Checkup")
 
 
 class Specialty(Base):
     __tablename__ = "specialty"
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    doctors = relationship("Doctor", secondary=doctor_to_specialty_association, back_populates="specialties")
+    hospitals = relationship("Hospital", secondary=hospital_to_specialty_association, back_populates="specialties")
 
 
 class Template(Base):
@@ -169,29 +178,44 @@ class Schedule(Base):
     all_day = Column(Boolean, default=False)
 
 
-class UserRole(enum.Enum):
-    admin = 1
-    doctor = 2
-    patient = 3
+class UserRole(str, enum.Enum):
+    admin = "admin"
+    doctor = "doctor"
+    patient = "patient"
 
 
-class DocumentType(enum.Enum):
-    national_id = 1
-    passport = 2
+class DocumentType(str, enum.Enum):
+    national_id = "national_id"
+    passport = "passport"
 
 
 class User(Base):
     __tablename__ = "user"
     id = Column(Integer, primary_key=True)
-    user_role = Enum(UserRole)
-    document_type = Enum(DocumentType)
-    name = Column(String)
-    last_name = Column(String)
+    user_role = Column(Enum(UserRole))
+    document_type = Column(Enum(DocumentType))
+    name = Column(String(length=50))
+    last_name = Column(String(length=50))
     password = Column(String)
-    email = Column(String)
-    document_number: Column(CHAR(length=11))
+    email = Column(String, unique=True)
+    document_number = Column(String(11))
     date_of_birth = Column(Date)
     created_at = Column(DateTime, default=datetime.datetime.now())
     created_by = Column(Integer, ForeignKey("user.id"))
     updated_at = Column(DateTime)
     updated_by = Column(Integer, ForeignKey("user.id"))
+
+engine = start_engine()
+
+SessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine)
+
+
+@compiles(DropTable, "postgresql")
+def _compile_drop_table(element, compiler, **kwargs):
+    return compiler.visit_drop_table(element) + " CASCADE"
+
+
+def create_tables():
+    #Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)

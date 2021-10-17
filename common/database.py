@@ -1,6 +1,5 @@
 import os
 from sqlalchemy import create_engine
-from .models import Base
 
 
 def start_engine():
@@ -11,7 +10,3 @@ def start_engine():
 
     engine = create_engine(f"postgresql://{db_user}:{db_password}@{db_host}/{db_name}")
     return engine
-
-
-def create_tables(engine):
-    Base.metadata.create_all(engine)
