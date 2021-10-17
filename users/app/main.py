@@ -22,7 +22,13 @@ async def home():
     )
 
 
-@app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED, response_model_exclude_none=True)
+@app.post(
+    "/users",
+    response_model=User,
+    status_code=status.HTTP_201_CREATED,
+    response_model_exclude_none=True,
+    tags=["users"]
+)
 def create_user(user: UserIn, db: Session = Depends(get_db)):
     try:
         existing_user = storage.get_user_by_email(db, user.email)
@@ -49,12 +55,24 @@ def create_user(user: UserIn, db: Session = Depends(get_db)):
         )
 
 
-@app.get("/users", response_model=List[User], status_code=status.HTTP_200_OK, response_model_exclude_none=True)
+@app.get(
+    "/users",
+    response_model=List[User],
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["users"]
+)
 def get_users(db: Session = Depends(get_db), user_role: Optional[UserRole] = None):
     return storage.get_users(db, user_role)
 
 
-@app.get("/users/{user_id}", response_model=User, status_code=status.HTTP_200_OK, response_model_exclude_none=True)
+@app.get(
+    "/users/{user_id}",
+    response_model=User,
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["users"]
+)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     db_user = storage.get_user(db, user_id)
     if db_user is None:
@@ -66,7 +84,13 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-@app.put("/users/{user_id}", response_model=User, status_code=status.HTTP_200_OK, response_model_exclude_none=True)
+@app.put(
+    "/users/{user_id}",
+    response_model=User,
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["users"]
+)
 def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
     try:
         db_user = storage.update_user(db, user_id, user)
@@ -84,7 +108,13 @@ def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
         )
 
 
-@app.delete("/users/{user_id}", response_model=User, status_code=status.HTTP_200_OK, response_model_exclude_none=True)
+@app.delete(
+    "/users/{user_id}",
+    response_model=User,
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["users"]
+)
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     try:
         db_user = storage.delete_user(db, user_id)
