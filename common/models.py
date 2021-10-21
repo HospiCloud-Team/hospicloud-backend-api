@@ -1,6 +1,5 @@
 import enum
 import datetime
-
 from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import Boolean, Time
@@ -48,6 +47,8 @@ class Checkup(Base):
     patient_id = Column(Integer, ForeignKey("patient.id"))
     data = Column(JSON)
     date = Column(DateTime, default=datetime.datetime.now())
+    patient = relationship("Patient", back_populates="checkups")
+    doctor = relationship("Doctor", back_populates="checkups")
 
 
 class Province(enum.Enum):
@@ -124,6 +125,7 @@ class Doctor(Base):
         "User",
         uselist=False
     )
+    checkups = relationship("Checkup")
 
 
 class Specialty(Base):
@@ -210,6 +212,8 @@ class Patient(Base):
         back_populates="patient"
     )
 
+    checkups = relationship("Checkup")
+
 
 class User(Base):
     __tablename__ = "user"
@@ -242,5 +246,5 @@ def _compile_drop_table(element, compiler, **kwargs):
 
 
 def create_tables():
-    Base.metadata.drop_all(engine)
+    #Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)

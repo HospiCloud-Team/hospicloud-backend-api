@@ -40,7 +40,7 @@ async def home():
     response_model_exclude_none=True,
     tags=["users"]
 )
-def create_user(user: UserIn, db: Session = Depends(get_db)):
+async def create_user(user: UserIn, db: Session = Depends(get_db)):
     try:
         existing_user = storage.get_user_by_email(db, user.email)
         if existing_user:
@@ -73,7 +73,7 @@ def create_user(user: UserIn, db: Session = Depends(get_db)):
     response_model_exclude_none=True,
     tags=["users"]
 )
-def get_users(db: Session = Depends(get_db), user_role: Optional[UserRole] = None):
+async def get_users(db: Session = Depends(get_db), user_role: Optional[UserRole] = None):
     return storage.get_users(db, user_role)
 
 
@@ -84,7 +84,7 @@ def get_users(db: Session = Depends(get_db), user_role: Optional[UserRole] = Non
     response_model_exclude_none=True,
     tags=["users"]
 )
-def get_user(user_id: int, db: Session = Depends(get_db)):
+async def get_user(user_id: int, db: Session = Depends(get_db)):
     db_user = storage.get_user(db, user_id)
     if db_user is None:
         return JSONResponse(
@@ -102,7 +102,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     response_model_exclude_none=True,
     tags=["users"]
 )
-def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
+async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
     try:
         db_user = storage.update_user(db, user_id, user)
         if db_user is None:
@@ -126,7 +126,7 @@ def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
     response_model_exclude_none=True,
     tags=["users"]
 )
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+async def delete_user(user_id: int, db: Session = Depends(get_db)):
     try:
         db_user = storage.delete_user(db, user_id)
         if db_user is None:

@@ -42,3 +42,5 @@ services:
         environment:
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=password
+        ports: 
+            - 5432:5432
