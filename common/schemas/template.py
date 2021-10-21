@@ -1,14 +1,15 @@
 import datetime
 from typing import Optional
 from pydantic import BaseModel
-from schemas.template import Specialty
+
+from .specialty import Specialty
 
 
 class TemplateBase(BaseModel):
     title: str
     headers: str
-    numeric_fields: int
-    alphanumeric_fields: int
+    numeric_fields: Optional[int] = None
+    alphanumeric_fields: Optional[int] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
 
