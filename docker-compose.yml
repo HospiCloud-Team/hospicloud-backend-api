@@ -1,12 +1,12 @@
 version: '3'
 services:
-    templates:
-        container_name: templates
+    utilities:
+        container_name: utilities
         depends_on: 
             - postgres-db
         build: 
             context: ./
-            dockerfile: templates/Dockerfile
+            dockerfile: utilities/Dockerfile
         environment:
             - PORT=8080
         ports:
