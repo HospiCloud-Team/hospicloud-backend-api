@@ -13,9 +13,11 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine)
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine)
 
 
 @pytest.fixture()
@@ -40,7 +42,7 @@ def test_db():
         date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
     )
     doctor = Doctor(user=doctor_user)
-    patient = Patient(user=patient_user, id_blood_type="a_plus")
+    patient = Patient(user=patient_user, blood_type="a_plus")
     template = Template(
         numeric_fields=0,
         alphanumeric_fields=1,

@@ -5,7 +5,7 @@ from common.models import BloodType
 
 
 class PatientBase(BaseModel):
-    id_blood_type: BloodType
+    blood_type: BloodType
     medical_background: Optional[str] = None
 
 
