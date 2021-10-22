@@ -43,8 +43,21 @@ def create_template(db: Session, template: TemplateIn) -> Template:
         raise Exception(f'Unexpected error: {e}')
 
 
-def get_template(db: Session, template_id: int) -> Template:
-    return db.query(Template).filter(Template.id == template_id).first()
+def get_template_by_specialty_id(db: Session, specialty_id: int) -> Template:
+    return db.query(Template).filter(Template.specialty_id == specialty_id).first()
+
+
+def get_template(db: Session, hospital_id: int) -> Template:
+    return db.query(Template).filter(Template.id == hospital_id).first()
+
+
+def get_templates(db: Session, hospital_id: int) -> Template:
+    filter_params: dict = {"hospital_id": hospital_id}
+
+    filter_params = {key: value for (
+        key, value) in filter_params.items() if value}
+
+    return db.query(Template).filter_by(**filter_params).all()
 
 
 def delete_template(db: Session, template_id: int) -> Template:

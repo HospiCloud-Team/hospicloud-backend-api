@@ -26,6 +26,10 @@ def test_create_template(test_db):
     assert data["numeric_fields"] == 1
     assert data["alphanumeric_fields"] == 3
 
+    response = client.post("/templates", json=payload)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
 
 def test_get_template_by_id(test_db):
     response = client.get("/templates/1")
@@ -37,6 +41,20 @@ def test_get_template_not_found(test_db):
     response = client.get("/templates/123")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_get_templates(test_db):
+    response = client.get("/templates")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) > 1
+
+    response = client.get("/templates?hospital_id=2")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 1
 
 
 def test_delete_template(test_db):

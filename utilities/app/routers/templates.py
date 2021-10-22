@@ -1,4 +1,5 @@
 import traceback
+from typing import Optional, List
 from fastapi import APIRouter, Depends, status
 from starlette.responses import JSONResponse
 
@@ -18,6 +19,14 @@ router = APIRouter()
 )
 def create_template(template: TemplateIn, db: Session = Depends(get_db)):
     try:
+        existing_template = templates.get_template_by_specialty_id(
+            db, template.specialty_id)
+        if existing_template:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Specialty already has a template assigned"}
+            )
+
         return templates.create_template(db, template)
     except Exception:
         print(traceback.format_exc())
@@ -44,6 +53,17 @@ async def get_template(template_id: int, db: Session = Depends(get_db)):
         )
 
     return db_template
+
+
+@router.get(
+    "/templates",
+    response_model=List[Template],
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["templates"]
+)
+async def get_templates(hospital_id: Optional[int] = None, db: Session = Depends(get_db)):
+    return templates.get_templates(db, hospital_id)
 
 
 @router.delete(
