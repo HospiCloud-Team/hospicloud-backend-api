@@ -45,3 +45,19 @@ def create_template(db: Session, template: TemplateIn) -> Template:
 
 def get_template(db: Session, template_id: int) -> Template:
     return db.query(Template).filter(Template.id == template_id).first()
+
+
+def delete_template(db: Session, template_id: int) -> Template:
+    template = get_template(db, template_id)
+    if not template:
+        return None
+
+    try:
+        db.delete(template)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
+        raise Exception(f'Unexpected error: {e}')
+
+    return template

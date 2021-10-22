@@ -44,3 +44,25 @@ async def get_template(template_id: int, db: Session = Depends(get_db)):
         )
 
     return db_template
+
+
+@router.delete(
+    "/templates/{template_id}",
+    response_model=Template,
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["templates"]
+)
+async def delete_template(template_id: int, db: Session = Depends(get_db)):
+    try:
+        db_template = templates.delete_template(db, template_id)
+        if db_template is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"message": "Template not found"}
+            )
+    except Exception:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal server error, try again later"}
+        )

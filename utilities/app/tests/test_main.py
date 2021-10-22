@@ -37,3 +37,13 @@ def test_get_template_not_found(test_db):
     response = client.get("/templates/123")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_delete_template(test_db):
+    response = client.delete("/templates/1")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    response = client.get("/templates/1")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
