@@ -28,11 +28,21 @@ def test_db():
 
     db = TestingSessionLocal()
 
+    template = Template(
+        title="Cardiac conditions",
+        headers="{\"name\":\"string\",\"last_name\":\"string\",\"condition\":\"string\",\"age\":\"int\"}",
+        specialty_id=1,
+        hospital_id=1,
+        numeric_fields=1,
+        alphanumeric_fields=3
+    )
+
     hospital = Hospital(name="Mock hospital")
     specialty = Specialty(name="pediatrician")
 
     db.add(hospital)
     db.add(specialty)
+    db.add(template)
     db.commit()
 
     yield

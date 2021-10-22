@@ -25,3 +25,15 @@ def test_create_template(test_db):
 
     assert data["numeric_fields"] == 1
     assert data["alphanumeric_fields"] == 3
+
+
+def test_get_template_by_id(test_db):
+    response = client.get("/templates/1")
+
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_get_template_not_found(test_db):
+    response = client.get("/templates/123")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND

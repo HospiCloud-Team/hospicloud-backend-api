@@ -41,3 +41,7 @@ def create_template(db: Session, template: TemplateIn) -> Template:
         db.rollback()
         print(traceback.format_exc())
         raise Exception(f'Unexpected error: {e}')
+
+
+def get_template(db: Session, template_id: int) -> Template:
+    return db.query(Template).filter(Template.id == template_id).first()

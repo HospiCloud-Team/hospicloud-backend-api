@@ -11,6 +11,7 @@ router = APIRouter()
 
 @router.post(
     "/templates",
+    response_model=Template,
     status_code=status.HTTP_201_CREATED,
     response_model_exclude_none=True,
     tags=["templates"]
@@ -25,3 +26,21 @@ def create_template(template: TemplateIn, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal server error, try again later"}
         )
+
+
+@router.get(
+    "/templates/{template_id}",
+    response_model=Template,
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["templates"]
+)
+async def get_template(template_id: int, db: Session = Depends(get_db)):
+    db_template = templates.get_template(db, template_id)
+    if db_template is None:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Template not found"}
+        )
+
+    return db_template
