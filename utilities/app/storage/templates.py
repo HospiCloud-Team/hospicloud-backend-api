@@ -2,6 +2,8 @@ import json
 import traceback
 import datetime
 
+from sqlalchemy.sql.elements import and_
+
 from common.schemas.template import Template, TemplateIn, TemplateUpdate
 from common.models import Template
 from dependencies import Session
@@ -33,8 +35,13 @@ def create_template(db: Session, template: TemplateIn) -> Template:
         raise Exception(f'Unexpected error: {e}')
 
 
-def get_template_by_specialty_id(db: Session, specialty_id: int) -> Template:
-    return db.query(Template).filter(Template.specialty_id == specialty_id).first()
+def get_template_by_specialty_id(db: Session, specialty_id: int, hospital_id: int) -> Template:
+    return db.query(Template).filter(
+        and_(
+            Template.specialty_id == specialty_id,
+            Template.hospital_id == hospital_id
+        )
+    ).first()
 
 
 def get_template(db: Session, template_id: int) -> Template:
@@ -59,10 +66,12 @@ def update_template(db: Session, template_id: int, updated_template: TemplateUpd
         if updated_template.title:
             template.title = updated_template.title
 
-        numeric_fields, alphanumeric_fields = calculate_template_fields(updated_template)
+        if updated_template.headers:
+            numeric_fields, alphanumeric_fields = calculate_template_fields(
+                updated_template)
 
-        template.numeric_fields = numeric_fields
-        template.alphanumeric_fields = alphanumeric_fields
+            template.numeric_fields = numeric_fields
+            template.alphanumeric_fields = alphanumeric_fields
 
         template.updated_at = datetime.datetime.now()
 

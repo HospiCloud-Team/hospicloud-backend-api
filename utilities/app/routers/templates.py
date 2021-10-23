@@ -20,7 +20,7 @@ router = APIRouter()
 def create_template(template: TemplateIn, db: Session = Depends(get_db)):
     try:
         existing_template = templates.get_template_by_specialty_id(
-            db, template.specialty_id)
+            db, template.specialty_id, template.hospital_id)
         if existing_template:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -105,6 +105,8 @@ async def delete_template(template_id: int, db: Session = Depends(get_db)):
                 status_code=status.HTTP_404_NOT_FOUND,
                 content={"message": "Template not found"}
             )
+
+        return db_template
     except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -26,7 +26,8 @@ class TemplateUpdate(BaseModel):
 
 class Template(TemplateBase):
     id: int
-    specialty = Specialty
+    specialty_id: int
+    hospital_id: int
 
     class Config:
         orm_mode = True
