@@ -41,6 +41,6 @@ jobs:
         run: |
           docker exec users pytest -vv
           
-      - name: Test templates container
+      - name: Test utilities container
         run: |
-          docker exec templates pytest -vv
+          docker exec utilities pytest -vv
