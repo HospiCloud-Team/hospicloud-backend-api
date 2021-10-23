@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from starlette.responses import JSONResponse
 
 from storage import templates
-from common.schemas.template import Template, TemplateIn
+from common.schemas.template import Template, TemplateIn, TemplateUpdate
 from dependencies import get_db, Session
 
 router = APIRouter()
@@ -64,6 +64,30 @@ async def get_template(template_id: int, db: Session = Depends(get_db)):
 )
 async def get_templates(hospital_id: Optional[int] = None, db: Session = Depends(get_db)):
     return templates.get_templates(db, hospital_id)
+
+
+@router.put(
+    "/templates/{template_id}",
+    response_model=Template,
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["templates"]
+)
+async def update_template(template_id: int, template: TemplateUpdate, db: Session = Depends(get_db)):
+    try:
+        db_template = templates.update_template(db, template_id, template)
+        if db_template is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"message": "Template not found"}
+            )
+
+        return db_template
+    except Exception:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal server error, try again later"}
+        )
 
 
 @router.delete(

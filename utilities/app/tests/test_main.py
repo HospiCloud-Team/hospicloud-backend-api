@@ -57,6 +57,21 @@ def test_get_templates(test_db):
     assert len(data) == 1
 
 
+def test_update_template(test_db):
+    payload = {
+        "title": "Updated cardiac conditions",
+        "headers": "{\"name\":\"string\",\"last_name\":\"string\"}",
+    }
+
+    response = client.put("/templates/1", json=payload)
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert data["title"] == "Updated cardiac conditions"
+    assert data["numeric_fields"] == 0
+    assert data["alphanumeric_fields"] == 2
+
+
 def test_delete_template(test_db):
     response = client.delete("/templates/1")
 

@@ -19,6 +19,11 @@ class TemplateIn(TemplateBase):
     hospital_id: int
 
 
+class TemplateUpdate(BaseModel):
+    title: Optional[str] = None
+    headers: Optional[str] = None
+
+
 class Template(TemplateBase):
     id: int
     specialty = Specialty

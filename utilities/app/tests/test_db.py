@@ -53,7 +53,8 @@ def test_db():
     ]
     specialties = [
         Specialty(name="pediatrician"),
-        Specialty(name="general")
+        Specialty(name="general"),
+        Specialty(name="mortician")
     ]
 
     db.bulk_save_objects(hospitals)
