@@ -48,7 +48,7 @@ def get_specialty_by_id(db: Session, specialty_id: int) -> Specialty:
     return db.query(Specialty).filter(Specialty.id == specialty_id).first()
 
 
-def update_specialty(db: Session, specialty_id: int, updated_specialty: SpecialtyUpdate) -> Specialty:
+def update_specialty(db: Session, updated_specialty: SpecialtyUpdate, specialty_id: int) -> Specialty:
     specialty = get_specialty_by_id(db, specialty_id)
     if not specialty:
         return None
@@ -83,16 +83,14 @@ def delete_specialty(db: Session, specialty_id: int) -> Specialty:
     return specialty
 
 
-def update_specialty(db: Session, updated_specialty: SpecialtyIn, specialty_id: int) -> Specialty:
+def update_specialty(db: Session, updated_specialty: SpecialtyUpdate, specialty_id: int) -> Specialty:
     specialty = get_specialty_by_id(db, specialty_id)
-    if specialty:
+    if not specialty:
         return None
 
     try:
         if updated_specialty.name:
-            raise ValueError("missing specialty name")
-
-        specialty.name = updated_specialty.name
+            specialty.name = updated_specialty.name
 
         db.commit()
         db.refresh(specialty)

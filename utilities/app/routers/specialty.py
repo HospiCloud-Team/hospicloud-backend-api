@@ -3,7 +3,7 @@ import traceback
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 
-from common.schemas.specialty import Specialty, SpecialtyIn
+from common.schemas.specialty import Specialty, SpecialtyIn, SpecialtyUpdate
 from storage import specialty as specialties
 from dependencies import get_db, Session
 
@@ -53,6 +53,29 @@ async def get_specialty(specialty_id: int, db: Session = Depends(get_db)):
         )
 
     return db_specialty
+
+
+@router.put(
+    "/specialties/{specialty_id}",
+    response_model=Specialty,
+    status_code=status.HTTP_200_OK,
+    tags=["specialties"]
+)
+async def update_specialty(specialty_id: int, specialty: SpecialtyUpdate, db: Session = Depends(get_db)):
+    try:
+        db_specialty = specialties.update_specialty(db, specialty, specialty_id)
+        if db_specialty is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"message": "Specialty not found"}
+            )
+        
+        return db_specialty
+    except Exception:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal server error, try again later"}
+        )
 
 
 @router.delete(

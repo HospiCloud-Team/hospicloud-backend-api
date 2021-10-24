@@ -37,3 +37,15 @@ def test_delete_specialty(test_db):
     response = client.delete("/specialties/1")
 
     assert response.status_code == status.HTTP_200_OK
+
+
+def test_update_specialty(test_db):
+    payload = {
+        "name": "updated specialty"
+    }
+
+    response = client.put("/specialties/2", json=payload)
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert data["name"] == "updated specialty"
