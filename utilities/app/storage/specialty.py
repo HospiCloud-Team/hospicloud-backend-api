@@ -1,8 +1,10 @@
 import traceback
-from typing import List
+from typing import List, Optional
+
+from sqlalchemy.sql.elements import and_
 
 from common.schemas.specialty import Specialty, SpecialtyIn
-from common.models import Specialty, Hospital, hospital_to_specialty_association
+from common.models import Specialty, Hospital
 from dependencies import Session
 
 
@@ -11,7 +13,10 @@ def create_specialty(db: Session, specialty: SpecialtyIn) -> Specialty:
         raise ValueError("Specialty name is empty")
 
     try:
-        db_specialty = Specialty(**specialty.dict())
+        db_specialty = Specialty(
+            name=specialty.name.strip(),
+            hospital_id=specialty.hospital_id
+        )
 
         db.add(db_specialty)
 
@@ -27,17 +32,24 @@ def create_specialty(db: Session, specialty: SpecialtyIn) -> Specialty:
 
 def get_specialties(db: Session, hospital_id: int) -> List[Specialty]:
     if hospital_id:
-        return db.query(Specialty).join(hospital_to_specialty_association).filter(hospital_to_specialty_association.c.hospital_id == hospital_id).all()
+        return db.query(Specialty).filter(Specialty.hospital_id == hospital_id).all()
 
     return db.query(Specialty).all()
 
 
-def get_specialty(db: Session, specialty_id: int) -> Specialty:
+def get_specialty_by_name(db: Session, specialty_name: str, hospital_id: int) -> Specialty:
+    return db.query(Specialty).filter(
+        Specialty.name == specialty_name,
+        Specialty.hospital_id == hospital_id
+    ).first()
+
+
+def get_specialty_by_id(db: Session, specialty_id: int) -> Specialty:
     return db.query(Specialty).filter(Specialty.id == specialty_id).first()
 
 
 def delete_specialty(db: Session, specialty_id: int) -> Specialty:
-    specialty = get_specialty(db, specialty_id)
+    specialty = get_specialty_by_id(db, specialty_id)
     if specialty:
         return None
 
@@ -53,7 +65,7 @@ def delete_specialty(db: Session, specialty_id: int) -> Specialty:
 
 
 def update_specialty(db: Session, updated_specialty: SpecialtyIn, specialty_id: int) -> Specialty:
-    specialty = get_specialty(db, specialty_id)
+    specialty = get_specialty_by_id(db, specialty_id)
     if specialty:
         return None
 
