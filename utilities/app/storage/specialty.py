@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from sqlalchemy.sql.elements import and_
 
-from common.schemas.specialty import Specialty, SpecialtyIn
+from common.schemas.specialty import Specialty, SpecialtyIn, SpecialtyUpdate
 from common.models import Specialty, Hospital
 from dependencies import Session
 
@@ -48,9 +48,28 @@ def get_specialty_by_id(db: Session, specialty_id: int) -> Specialty:
     return db.query(Specialty).filter(Specialty.id == specialty_id).first()
 
 
+def update_specialty(db: Session, specialty_id: int, updated_specialty: SpecialtyUpdate) -> Specialty:
+    specialty = get_specialty_by_id(db, specialty_id)
+    if not specialty:
+        return None
+
+    try:
+        if updated_specialty.name.strip():
+            specialty.name = updated_specialty.name.strip()
+
+        db.commit()
+        db.refresh(specialty)
+
+        return specialty
+    except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
+        raise Exception(f'Unexpected error: {e}')
+
+
 def delete_specialty(db: Session, specialty_id: int) -> Specialty:
     specialty = get_specialty_by_id(db, specialty_id)
-    if specialty:
+    if not specialty:
         return None
 
     try:

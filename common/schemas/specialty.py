@@ -12,6 +12,10 @@ class SpecialtyIn(SpecialtyBase):
     pass
 
 
+class SpecialtyUpdate(BaseModel):
+    name: str
+
+
 class Specialty(SpecialtyBase):
     id: int
 
