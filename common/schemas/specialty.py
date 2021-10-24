@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class SpecialtyBase(BaseModel):
     name: str
+    hospital_id: int
 
 
 class SpecialtyIn(SpecialtyBase):
@@ -13,7 +14,6 @@ class SpecialtyIn(SpecialtyBase):
 
 class Specialty(SpecialtyBase):
     id: int
-    hospital_ids: Optional[List[int]] = None
 
     class Config:
         orm_mode = True
