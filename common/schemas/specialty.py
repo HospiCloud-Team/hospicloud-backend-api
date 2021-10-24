@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 
 
@@ -13,6 +13,7 @@ class SpecialtyIn(SpecialtyBase):
 
 class Specialty(SpecialtyBase):
     id: int
+    hospital_ids: Optional[List[int]] = None
 
     class Config:
         orm_mode = True
