@@ -167,16 +167,15 @@ class BloodType(str, enum.Enum):
 class Template(Base):
     __tablename__ = "template"
     id = Column(Integer, primary_key=True)
+    title = Column(String)
     specialty_id = Column(Integer, ForeignKey("specialty.id"))
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
+    headers = Column(JSON)
     numeric_fields = Column(Integer)
     alphanumeric_fields = Column(Integer)
     file_upload_fields = Column(Integer)
-    headers = Column(JSON)
     created_at = Column(DateTime, default=datetime.datetime.now())
-    created_by = Column(Integer, ForeignKey("user.id"))
     updated_at = Column(DateTime)
-    updated_by = Column(Integer, ForeignKey("user.id"))
 
 
 class Schedule(Base):
@@ -246,5 +245,5 @@ def _compile_drop_table(element, compiler, **kwargs):
 
 
 def create_tables():
-    #Base.metadata.drop_all(engine)
+    # Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
