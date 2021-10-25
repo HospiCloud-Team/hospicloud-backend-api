@@ -40,12 +40,12 @@ async def read_checkups_by_doctor(doctor_id: int, db_session=Depends(get_db)):
 )
 async def read_checkups_by_patient(patient_id: int, db_session=Depends(get_db)):
     checkups = storage.get_checkups_by_patient(db_session, patient_id)
-    print(checkups)
     return checkups
 
 
 @app.post(
     "/checkups/",
+    response_model=Checkup,
     status_code=status.HTTP_201_CREATED,
     tags=["checkups"],
 )
