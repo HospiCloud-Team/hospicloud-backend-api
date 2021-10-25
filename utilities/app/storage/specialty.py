@@ -31,10 +31,7 @@ def create_specialty(db: Session, specialty: SpecialtyIn) -> Specialty:
 
 
 def get_specialties(db: Session, hospital_id: int) -> List[Specialty]:
-    if hospital_id:
-        return db.query(Specialty).filter(Specialty.hospital_id == hospital_id).all()
-
-    return db.query(Specialty).all()
+    return db.query(Specialty).filter(Specialty.hospital_id == hospital_id).all()
 
 
 def get_specialty_by_name(db: Session, specialty_name: str, hospital_id: int) -> Specialty:

@@ -1,5 +1,5 @@
-from os import stat
 import traceback
+from typing import List
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 
@@ -55,6 +55,16 @@ async def get_specialty(specialty_id: int, db: Session = Depends(get_db)):
     return db_specialty
 
 
+@router.get(
+    "/specialties",
+    response_model=List[Specialty],
+    status_code=status.HTTP_200_OK,
+    tags=["specialties"]
+)
+async def get_specialties_by_hospital_id(hospital_id: int, db: Session = Depends(get_db)):
+    return specialties.get_specialties(db, hospital_id)
+
+
 @router.put(
     "/specialties/{specialty_id}",
     response_model=Specialty,
@@ -63,13 +73,14 @@ async def get_specialty(specialty_id: int, db: Session = Depends(get_db)):
 )
 async def update_specialty(specialty_id: int, specialty: SpecialtyUpdate, db: Session = Depends(get_db)):
     try:
-        db_specialty = specialties.update_specialty(db, specialty, specialty_id)
+        db_specialty = specialties.update_specialty(
+            db, specialty, specialty_id)
         if db_specialty is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content={"message": "Specialty not found"}
             )
-        
+
         return db_specialty
     except Exception:
         return JSONResponse(

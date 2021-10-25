@@ -33,6 +33,14 @@ def test_get_specialty_not_found(test_db):
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
+def test_get_specialty_by_hospital_id(test_db):
+    response = client.get("/specialties?hospital_id=2")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 2
+
+
 def test_delete_specialty(test_db):
     response = client.delete("/specialties/1")
 
