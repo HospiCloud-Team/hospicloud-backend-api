@@ -19,13 +19,6 @@ doctor_to_specialty_association = Table(
     Column("specialty_id", ForeignKey("specialty.id")),
 )
 
-hospital_to_specialty_association = Table(
-    "hospital_specialty",
-    Base.metadata,
-    Column("hospital_id", ForeignKey("hospital.id")),
-    Column("specialty_id", ForeignKey("specialty.id")),
-)
-
 
 class Admin(Base):
     __tablename__ = "admin"
@@ -102,12 +95,6 @@ class Hospital(Base):
     created_at = Column(DateTime, default=datetime.datetime.now())
     updated_at = Column(DateTime)
 
-    specialties = relationship(
-        "Specialty",
-        secondary=hospital_to_specialty_association,
-        back_populates="hospitals"
-    )
-
 
 class Doctor(Base):
     __tablename__ = "doctor"
@@ -132,16 +119,11 @@ class Specialty(Base):
     __tablename__ = "specialty"
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    hospital_id = Column(Integer, ForeignKey("hospital.id"))
 
     doctors = relationship(
         "Doctor",
         secondary=doctor_to_specialty_association,
-        back_populates="specialties"
-    )
-
-    hospitals = relationship(
-        "Hospital",
-        secondary=hospital_to_specialty_association,
         back_populates="specialties"
     )
 

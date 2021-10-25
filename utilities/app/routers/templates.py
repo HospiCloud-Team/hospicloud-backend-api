@@ -45,7 +45,7 @@ def create_template(template: TemplateIn, db: Session = Depends(get_db)):
     tags=["templates"]
 )
 async def get_template(template_id: int, db: Session = Depends(get_db)):
-    db_template = templates.get_template(db, template_id)
+    db_template = templates.get_template_by_id(db, template_id)
     if db_template is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -63,7 +63,7 @@ async def get_template(template_id: int, db: Session = Depends(get_db)):
     tags=["templates"]
 )
 async def get_templates(hospital_id: Optional[int] = None, db: Session = Depends(get_db)):
-    return templates.get_templates(db, hospital_id)
+    return templates.get_templates_by_hospital_id(db, hospital_id)
 
 
 @router.put(

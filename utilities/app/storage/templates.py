@@ -44,11 +44,11 @@ def get_template_by_specialty_id(db: Session, specialty_id: int, hospital_id: in
     ).first()
 
 
-def get_template(db: Session, template_id: int) -> Template:
+def get_template_by_id(db: Session, template_id: int) -> Template:
     return db.query(Template).filter(Template.id == template_id).first()
 
 
-def get_templates(db: Session, hospital_id: int) -> Template:
+def get_templates_by_hospital_id(db: Session, hospital_id: int) -> Template:
     filter_params: dict = {"hospital_id": hospital_id}
 
     filter_params = {key: value for (
@@ -58,7 +58,7 @@ def get_templates(db: Session, hospital_id: int) -> Template:
 
 
 def update_template(db: Session, template_id: int, updated_template: TemplateUpdate) -> Template:
-    template = get_template(db, template_id)
+    template = get_template_by_id(db, template_id)
     if not template:
         return None
 
@@ -86,7 +86,7 @@ def update_template(db: Session, template_id: int, updated_template: TemplateUpd
 
 
 def delete_template(db: Session, template_id: int) -> Template:
-    template = get_template(db, template_id)
+    template = get_template_by_id(db, template_id)
     if not template:
         return None
 
