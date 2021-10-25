@@ -1,4 +1,5 @@
 from fastapi import FastAPI, status
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from routers import templates, specialty
 
@@ -9,6 +10,16 @@ app = FastAPI(
 
 app.include_router(templates.router)
 app.include_router(specialty.router)
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
