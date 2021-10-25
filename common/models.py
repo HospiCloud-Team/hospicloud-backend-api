@@ -40,8 +40,10 @@ class Checkup(Base):
     patient_id = Column(Integer, ForeignKey("patient.id"))
     data = Column(JSON)
     date = Column(DateTime, default=datetime.datetime.now())
-    patient = relationship("Patient", back_populates="checkups")
-    doctor = relationship("Doctor", back_populates="checkups")
+    patient = relationship(
+        "Patient", back_populates="checkups", lazy="joined", join_depth=2)
+    doctor = relationship(
+        "Doctor", back_populates="checkups", lazy="joined", join_depth=2)
 
 
 class Province(enum.Enum):
@@ -110,7 +112,9 @@ class Doctor(Base):
     )
     user = relationship(
         "User",
-        uselist=False
+        uselist=False,
+        lazy="joined",
+        join_depth=2
     )
     checkups = relationship("Checkup")
 
@@ -190,7 +194,9 @@ class Patient(Base):
 
     user = relationship(
         "User",
-        back_populates="patient"
+        back_populates="patient",
+        lazy="joined",
+        join_depth=2
     )
 
     checkups = relationship("Checkup")
