@@ -78,22 +78,3 @@ def delete_specialty(db: Session, specialty_id: int) -> Specialty:
         raise Exception(f'Unexpected error: {e}')
 
     return specialty
-
-
-def update_specialty(db: Session, updated_specialty: SpecialtyUpdate, specialty_id: int) -> Specialty:
-    specialty = get_specialty_by_id(db, specialty_id)
-    if not specialty:
-        return None
-
-    try:
-        if updated_specialty.name:
-            specialty.name = updated_specialty.name
-
-        db.commit()
-        db.refresh(specialty)
-
-        return specialty
-    except Exception as e:
-        db.rollback()
-        print(traceback.format_exc())
-        raise Exception(f'Unexpected error: {e}')
