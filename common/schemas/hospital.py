@@ -1,7 +1,7 @@
 import datetime
 from pydantic import BaseModel
 from typing import Optional
-from .location import LocationIn
+from .location import LocationIn, Location
 
 
 class HospitalBase(BaseModel):
@@ -17,6 +17,7 @@ class HospitalIn(HospitalBase):
 
 class Hospital(HospitalBase):
     id: int
+    location: Location
 
     class Config:
         orm_mode = True

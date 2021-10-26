@@ -49,7 +49,7 @@ def test_db():
 
     hospitals = [
         Hospital(name="Mock hospital"),
-        Hospital(name="Public hospital")
+        Hospital(name="Private hospital")
     ]
     specialties = [
         Specialty(name="pediatrician", hospital_id=1),

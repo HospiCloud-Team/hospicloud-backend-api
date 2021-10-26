@@ -2,11 +2,10 @@ import enum
 import datetime
 from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.sql import func
-from sqlalchemy.sql.sqltypes import Boolean, Time
 from sqlalchemy.schema import DropTable
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.types import JSON, DateTime, Date, Enum, Integer, String
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session
+from sqlalchemy.orm import backref, declarative_base, relationship, sessionmaker, Session
 
 from common.database import start_engine
 
@@ -44,7 +43,7 @@ class Checkup(Base):
     doctor = relationship("Doctor", back_populates="checkups")
 
 
-class Province(enum.Enum):
+class Province(str, enum.Enum):
     azua = "azua"
     bahoruco = "bahoruco"
     barahona = "barahona"
@@ -82,11 +81,18 @@ class Province(enum.Enum):
 class Hospital(Base):
     __tablename__ = "hospital"
     id = Column(Integer, primary_key=True)
-    location_id = Column(Integer, ForeignKey("location.id"))
-    schedule_id = Column(Integer, ForeignKey("schedule.id"))
     name = Column(String)
+    schedule = Column(String(250))
+    location_id = Column(Integer, ForeignKey("location.id"))
     created_at = Column(DateTime, default=datetime.datetime.now())
     updated_at = Column(DateTime)
+
+    location = relationship(
+        "Location",
+        backref=backref("location", uselist=False),
+        lazy="joined",
+        join_depth=2
+    )
 
 
 class Doctor(Base):
@@ -94,7 +100,7 @@ class Doctor(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
-    schedule_id = Column(Integer, ForeignKey("schedule.id"))
+    schedule = Column(String(250))
 
     specialties = relationship(
         "Specialty",

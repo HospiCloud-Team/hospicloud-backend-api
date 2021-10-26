@@ -1,6 +1,6 @@
 from fastapi import FastAPI, status
 from starlette.responses import JSONResponse
-from routers import templates, specialty
+from routers import templates, specialty, hospital
 
 app = FastAPI(
     title="Utilities",
@@ -9,6 +9,7 @@ app = FastAPI(
 
 app.include_router(templates.router)
 app.include_router(specialty.router)
+app.include_router(hospital.router)
 
 
 @app.get("/")
