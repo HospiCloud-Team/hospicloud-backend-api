@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from common.schemas.hospital import Hospital, HospitalIn
@@ -33,3 +34,30 @@ async def create_hospital(hospital: HospitalIn, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal server error, try again later"}
         )
+
+
+@router.get(
+    "/hospitals/{hospital_id}",
+    response_model=Hospital,
+    status_code=status.HTTP_200_OK,
+    tags=["hospitals"]
+)
+async def get_hospital(hospital_id: int, db: Session = Depends(get_db)):
+    db_hospital = hospitals.get_hospital_by_id(db, hospital_id)
+    if db_hospital is None:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Hospital not found"}
+        )
+
+    return db_hospital
+
+
+@router.get(
+    "/hospitals",
+    response_model=List[Hospital],
+    status_code=status.HTTP_200_OK,
+    tags=["hospitals"]
+)
+async def get_hospitals(db: Session = Depends(get_db)):
+    return hospitals.get_hospitals(db)

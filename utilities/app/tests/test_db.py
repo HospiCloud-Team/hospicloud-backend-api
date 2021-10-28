@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 import pytest
 
 from common.database import start_engine
-from common.models import Base, Template, Specialty, Hospital
+from common.models import Base, Template, Specialty, Hospital, Location
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -47,16 +47,33 @@ def test_db():
         )
     ]
 
+    location = Location(
+        address="Av. Abraham Lincoln 2, Santo Domingo 10101",
+        province="santo_domingo"
+    )
+
     hospitals = [
-        Hospital(name="Mock hospital"),
-        Hospital(name="Private hospital")
+        Hospital(
+            name="Mock hospital",
+            location=location,
+            location_id=1,
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+        ),
+        Hospital(
+            name="Private hospital",
+            location=location,
+            location_id=1,
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+        )
     ]
+
     specialties = [
         Specialty(name="pediatrician", hospital_id=1),
         Specialty(name="general", hospital_id=2),
         Specialty(name="mortician", hospital_id=2)
     ]
 
+    db.add(location)
     db.bulk_save_objects(hospitals)
     db.bulk_save_objects(specialties)
     db.bulk_save_objects(templates)

@@ -24,3 +24,23 @@ def test_create_hospital(test_db):
     data = response.json()
 
     assert response.status_code == status.HTTP_201_CREATED
+
+
+def test_get_hospital_by_id(test_db):
+    response = client.get("/hospitals/1")
+
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_get_hospital_by_id_not_found(test_db):
+    response = client.get("/hospitals/123")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_get_hospitals(test_db):
+    response = client.get("/hospitals")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) > 1

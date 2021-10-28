@@ -1,4 +1,5 @@
 import traceback
+from typing import List
 from common.schemas.hospital import Hospital, HospitalIn
 from common.schemas.location import Province
 from common.models import Hospital, Location
@@ -20,7 +21,8 @@ def create_hospital(db: Session, hospital: HospitalIn) -> Hospital:
             raise ValueError("Invalid province")
 
         db_location = Location(**hospital.location.dict())
-        db_hospital = Hospital(**hospital.dict(exclude={"location"}), location=db_location)
+        db_hospital = Hospital(
+            **hospital.dict(exclude={"location"}), location=db_location)
 
         db.add(db_location)
         db.add(db_hospital)
@@ -37,3 +39,11 @@ def create_hospital(db: Session, hospital: HospitalIn) -> Hospital:
 
 def get_hospital_by_name(db: Session, hospital_name: str) -> Hospital:
     return db.query(Hospital).filter(Hospital.name == hospital_name).first()
+
+
+def get_hospital_by_id(db: Session, hospital_id: int) -> Hospital:
+    return db.query(Hospital).filter(Hospital.id == hospital_id).first()
+
+
+def get_hospitals(db: Session) -> List[Hospital]:
+    return db.query(Hospital).all()
