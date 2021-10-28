@@ -44,3 +44,13 @@ def test_get_hospitals(test_db):
 
     assert response.status_code == status.HTTP_200_OK
     assert len(data) > 1
+
+
+def delete_hospital(test_db):
+    response = client.delete("/hospitals/1")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    response = client.get("/hospitals/1")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND

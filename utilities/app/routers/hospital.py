@@ -61,3 +61,26 @@ async def get_hospital(hospital_id: int, db: Session = Depends(get_db)):
 )
 async def get_hospitals(db: Session = Depends(get_db)):
     return hospitals.get_hospitals(db)
+
+
+@router.delete(
+    "/hospitals/{hospital_id}",
+    response_model=Hospital,
+    status_code=status.HTTP_200_OK,
+    tags=["hospitals"]
+)
+async def delete_hospital(hospital_id: int, db: Session = Depends(get_db)):
+    try:
+        db_hospital = hospitals.delete_hospital(db, hospital_id)
+        if db_hospital is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"message": "Hospital not found"}
+            )
+
+        return db_hospital
+    except Exception:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal server error, try again later"}
+        )

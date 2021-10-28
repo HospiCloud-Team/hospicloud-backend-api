@@ -47,3 +47,19 @@ def get_hospital_by_id(db: Session, hospital_id: int) -> Hospital:
 
 def get_hospitals(db: Session) -> List[Hospital]:
     return db.query(Hospital).all()
+
+
+def delete_hospital(db: Session, hospital_id: int) -> Hospital:
+    hospital = get_hospital_by_id(db, hospital_id)
+    if not hospital:
+        return None
+
+    try:
+        db.delete(hospital)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
+        raise Exception(f'Unexpected error: {e}')
+
+    return hospital
