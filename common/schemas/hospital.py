@@ -15,6 +15,12 @@ class HospitalIn(HospitalBase):
     location: LocationIn
 
 
+class HospitalUpdate(BaseModel):
+    name: str
+    schedule: str
+    location: LocationIn
+
+
 class Hospital(HospitalBase):
     id: int
     location: Location

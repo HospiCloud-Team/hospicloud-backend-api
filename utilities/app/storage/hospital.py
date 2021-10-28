@@ -1,6 +1,7 @@
 import traceback
+import datetime
 from typing import List
-from common.schemas.hospital import Hospital, HospitalIn
+from common.schemas.hospital import Hospital, HospitalIn, HospitalUpdate
 from common.schemas.location import Province
 from common.models import Hospital, Location
 from dependencies import Session
@@ -47,6 +48,39 @@ def get_hospital_by_id(db: Session, hospital_id: int) -> Hospital:
 
 def get_hospitals(db: Session) -> List[Hospital]:
     return db.query(Hospital).all()
+
+
+def update_hospital(db: Session, hospital_id: int, updated_hospital: HospitalUpdate) -> Hospital:
+    hospital = get_hospital_by_id(db, hospital_id)
+    if not hospital:
+        return None
+
+    try:
+        if updated_hospital.name.strip():
+            hospital.name = updated_hospital.name.strip()
+
+        if updated_hospital.schedule.strip():
+            hospital.schedule = updated_hospital.schedule.strip()
+
+        if updated_hospital.location:
+            if updated_hospital.location.address.strip():
+                hospital.location.address = updated_hospital.location.address
+
+            if not is_province_valid(updated_hospital.location.province):
+                raise ValueError("Invalid province")
+
+            hospital.location.province = updated_hospital.location.province
+
+        hospital.updated_at = datetime.datetime.now()
+
+        db.commit()
+        db.refresh(hospital)
+
+        return hospital
+    except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
+        raise Exception(f'Unexpected error: {e}')
 
 
 def delete_hospital(db: Session, hospital_id: int) -> Hospital:
