@@ -1,13 +1,14 @@
 import datetime
 from typing import Optional
 from pydantic import BaseModel
+from pydantic.types import constr
 
 from .specialty import Specialty
 
 
 class TemplateBase(BaseModel):
-    title: str
-    headers: str
+    title: constr(strip_whitespace=True)
+    headers: constr(strip_whitespace=True)
     numeric_fields: Optional[int] = None
     alphanumeric_fields: Optional[int] = None
     created_at: Optional[datetime.datetime] = None
@@ -20,8 +21,8 @@ class TemplateIn(TemplateBase):
 
 
 class TemplateUpdate(BaseModel):
-    title: Optional[str] = None
-    headers: Optional[str] = None
+    title: Optional[constr(strip_whitespace=True)] = None
+    headers: Optional[constr(strip_whitespace=True)] = None
 
 
 class Template(TemplateBase):

@@ -33,9 +33,10 @@ async def create_specialty(specialty: SpecialtyIn, db: Session = Depends(get_db)
             content={"message": "Specialty name is empty"}
         )
     except Exception as e:
-        db.rollback()
-        print(traceback.format_exc())
-        raise Exception(f'Unexpected error: {e}')
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal server error, try again later"}
+        )
 
 
 @router.get(

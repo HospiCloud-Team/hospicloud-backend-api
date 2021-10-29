@@ -2,11 +2,10 @@ import enum
 import datetime
 from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.sql import func
-from sqlalchemy.sql.sqltypes import Boolean, Time
 from sqlalchemy.schema import DropTable
 from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.types import JSON, DateTime, Date, Enum, Integer, String
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session
+from sqlalchemy.types import JSON, DateTime, Date, Enum, Integer, String, Boolean, Time
+from sqlalchemy.orm import backref, declarative_base, relationship, sessionmaker, Session
 
 from common.database import start_engine
 
@@ -46,56 +45,56 @@ class Checkup(Base):
         "Doctor", back_populates="checkups", lazy="joined", join_depth=2)
 
 
-class Province(enum.Enum):
-    azua = 1
-    bahoruco = 2
-    barahona = 3
-    dajabon = 4
-    distrito_nacional = 5
-    duarte = 6
-    elias_pina = 7
-    el_seibo = 8
-    espaillat = 9
-    hato_mayor = 10
-    hermanas_mirabal = 11
-    independencia = 12
-    la_altagracia = 13
-    la_romana = 14
-    la_vega = 15
-    maria_trinidad_sanchez = 16
-    monsenor_nouel = 17
-    monte_cristi = 18
-    monte_plata = 19
-    pedernales = 20
-    peravia = 21
-    puerto_plata = 22
-    samana = 23
-    sanchez_ramirez = 24
-    san_cristobal = 25
-    san_jose_de_ocoa = 26
-    san_juan = 27
-    san_pedro_de_macoris = 28
-    santiago = 29
-    santiago_rodriguez = 30
-    santo_domingo = 31
-    valverde = 32
-
-
-class City(Base):
-    __tablename__ = "city"
-    id = Column(Integer, primary_key=True)
-    province = Column(Enum(Province))
-    address = Column(String(length=250))
+class Province(str, enum.Enum):
+    azua = "azua"
+    bahoruco = "bahoruco"
+    barahona = "barahona"
+    dajabon = "dajabon"
+    distrito_nacional = "distrito_nacional"
+    duarte = "duarte"
+    elias_pina = "elias_pina"
+    el_seibo = "el_seibo"
+    espaillat = "espaillat"
+    hato_mayor = "hato_mayor"
+    hermanas_mirabal = "hermanas_mirabal"
+    independencia = "independencia"
+    la_altagracia = "la_altagracia"
+    la_romana = "la_romana"
+    la_vega = "la_vega"
+    maria_trinidad_sanchez = "maria_trinidad_sanchez"
+    monsenor_nouel = "monsenor_nouel"
+    monte_cristi = "monte_cristi"
+    monte_plata = "monte_plata"
+    pedernales = "pedernales"
+    peravia = "peravia"
+    puerto_plata = "puerto_plata"
+    samana = "samana"
+    sanchez_ramirez = "sanchez_ramirez"
+    san_cristobal = "san_cristobal"
+    san_jose_de_ocoa = "san_jose_de_ocoa"
+    san_juan = "san_juan"
+    san_pedro_de_macoris = "san_pedro_de_macoris"
+    santiago = "santiago"
+    santiago_rodriguez = "santiago_rodriguez"
+    santo_domingo = "santo_domingo"
+    valverde = "valverde"
 
 
 class Hospital(Base):
     __tablename__ = "hospital"
     id = Column(Integer, primary_key=True)
-    location_id = Column(Integer, ForeignKey("location.id"))
-    schedule_id = Column(Integer, ForeignKey("schedule.id"))
     name = Column(String)
+    schedule = Column(String(250))
+    location_id = Column(Integer, ForeignKey("location.id"))
     created_at = Column(DateTime, default=datetime.datetime.now())
     updated_at = Column(DateTime)
+
+    location = relationship(
+        "Location",
+        backref=backref("location", uselist=False),
+        lazy="joined",
+        join_depth=2
+    )
 
 
 class Doctor(Base):
@@ -103,6 +102,7 @@ class Doctor(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
+    schedule = Column(String(250))
     schedule_id = Column(Integer, ForeignKey("schedule.id"))
 
     specialties = relationship(
@@ -135,8 +135,8 @@ class Specialty(Base):
 class Location(Base):
     __tablename__ = "location"
     id = Column(Integer, primary_key=True)
-    city_id = Column(Integer, ForeignKey("city.id"))
-    address = Column(String)
+    address = Column(String(length=250))
+    province = Column(Enum(Province))
 
 
 class BloodType(str, enum.Enum):

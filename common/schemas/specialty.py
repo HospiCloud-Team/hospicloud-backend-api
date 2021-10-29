@@ -1,10 +1,11 @@
 from enum import Enum
 from typing import Optional, List
 from pydantic import BaseModel
+from pydantic.types import constr
 
 
 class SpecialtyBase(BaseModel):
-    name: str
+    name: constr(strip_whitespace=True)
     hospital_id: int
 
 
@@ -13,7 +14,7 @@ class SpecialtyIn(SpecialtyBase):
 
 
 class SpecialtyUpdate(BaseModel):
-    name: str
+    name: Optional[constr(strip_whitespace=True)] = None
 
 
 class Specialty(SpecialtyBase):
