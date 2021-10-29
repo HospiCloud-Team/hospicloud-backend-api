@@ -16,9 +16,9 @@ class HospitalIn(HospitalBase):
 
 
 class HospitalUpdate(BaseModel):
-    name: str
-    schedule: str
-    location: LocationIn
+    name: Optional[str] = None
+    schedule: Optional[str] = None
+    location: Optional[LocationIn] = None
 
 
 class Hospital(HospitalBase):

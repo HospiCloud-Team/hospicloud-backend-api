@@ -13,7 +13,7 @@ class SpecialtyIn(SpecialtyBase):
 
 
 class SpecialtyUpdate(BaseModel):
-    name: str
+    name: Optional[str] = None
 
 
 class Specialty(SpecialtyBase):
