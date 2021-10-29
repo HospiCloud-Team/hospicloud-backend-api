@@ -80,6 +80,7 @@ def test_update_certain_hospital_fields(test_db):
 
     assert response.status_code == status.HTTP_200_OK
     assert data["name"] == "Updated hospital name"
+    assert data["location"]["province"] == "samana"
 
 
 def delete_hospital(test_db):

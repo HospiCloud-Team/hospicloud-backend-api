@@ -4,7 +4,7 @@ from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.sql import func
 from sqlalchemy.schema import DropTable
 from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.types import JSON, DateTime, Date, Enum, Integer, String
+from sqlalchemy.types import JSON, DateTime, Date, Enum, Integer, String, Boolean, Time
 from sqlalchemy.orm import backref, declarative_base, relationship, sessionmaker, Session
 
 from common.database import start_engine
@@ -159,14 +159,14 @@ class Template(Base):
     updated_at = Column(DateTime)
 
 
-# class Schedule(Base):
-#     __tablename__ = "schedule"
-#     id = Column(Integer, primary_key=True)
-#     start_day = Column(String)
-#     end_day = Column(String)
-#     start_time = Column(Time)
-#     end_time = Column(Time)
-#     all_day = Column(Boolean, default=False)
+class Schedule(Base):
+    __tablename__ = "schedule"
+    id = Column(Integer, primary_key=True)
+    start_day = Column(String)
+    end_day = Column(String)
+    start_time = Column(Time)
+    end_time = Column(Time)
+    all_day = Column(Boolean, default=False)
 
 
 class UserRole(str, enum.Enum):

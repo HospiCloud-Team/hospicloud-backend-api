@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from pydantic.types import constr
-from .location import LocationIn, Location
+from .location import LocationIn, Location, LocationUpdate
 
 
 class HospitalBase(BaseModel):
@@ -20,7 +20,7 @@ class HospitalIn(HospitalBase):
 class HospitalUpdate(BaseModel):
     name: Optional[constr(strip_whitespace=True)] = None
     schedule: Optional[constr(strip_whitespace=True)] = None
-    location: Optional[LocationIn] = None
+    location: Optional[LocationUpdate] = None
 
 
 class Hospital(HospitalBase):

@@ -66,10 +66,11 @@ def update_hospital(db: Session, hospital_id: int, updated_hospital: HospitalUpd
             if updated_hospital.location.address:
                 hospital.location.address = updated_hospital.location.address
 
-            if not is_province_valid(updated_hospital.location.province):
-                raise ValueError("Invalid province")
+            if updated_hospital.location.province:
+                if not is_province_valid(updated_hospital.location.province):
+                    raise ValueError("Invalid province")
 
-            hospital.location.province = updated_hospital.location.province
+                hospital.location.province = updated_hospital.location.province
 
         hospital.updated_at = datetime.datetime.now()
 

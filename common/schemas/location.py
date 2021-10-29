@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from enum import Enum
+from typing import Optional
 
 from pydantic.types import constr
 
@@ -46,6 +47,11 @@ class LocationBase(BaseModel):
 
 class LocationIn(LocationBase):
     pass
+
+
+class LocationUpdate(BaseModel):
+    address: Optional[constr(strip_whitespace=True)] = None
+    province: Optional[Province] = None
 
 
 class Location(LocationBase):
