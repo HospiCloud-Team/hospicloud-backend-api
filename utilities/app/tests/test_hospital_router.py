@@ -67,6 +67,21 @@ def test_update_hospital(test_db):
     assert data["updated_at"] is not None
 
 
+def test_update_certain_hospital_fields(test_db):
+    payload = {
+        "name": "Updated hospital name",
+        "location": {
+            "province": "samana"
+        }
+    }
+
+    response = client.put("/hospitals/1", json=payload)
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert data["name"] == "Updated hospital name"
+
+
 def delete_hospital(test_db):
     response = client.delete("/hospitals/1")
 

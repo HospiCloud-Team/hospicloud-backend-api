@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from enum import Enum
 
+from pydantic.types import constr
+
 
 class Province(str, Enum):
     azua = "azua"
@@ -38,7 +40,7 @@ class Province(str, Enum):
 
 
 class LocationBase(BaseModel):
-    address: str
+    address: constr(strip_whitespace=True)
     province: Province
 
 

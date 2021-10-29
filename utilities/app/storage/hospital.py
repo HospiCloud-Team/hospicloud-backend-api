@@ -56,14 +56,14 @@ def update_hospital(db: Session, hospital_id: int, updated_hospital: HospitalUpd
         return None
 
     try:
-        if updated_hospital.name.strip():
-            hospital.name = updated_hospital.name.strip()
+        if updated_hospital.name:
+            hospital.name = updated_hospital.name
 
-        if updated_hospital.schedule.strip():
-            hospital.schedule = updated_hospital.schedule.strip()
+        if updated_hospital.schedule:
+            hospital.schedule = updated_hospital.schedule
 
         if updated_hospital.location:
-            if updated_hospital.location.address.strip():
+            if updated_hospital.location.address:
                 hospital.location.address = updated_hospital.location.address
 
             if not is_province_valid(updated_hospital.location.province):

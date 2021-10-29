@@ -14,7 +14,7 @@ def create_specialty(db: Session, specialty: SpecialtyIn) -> Specialty:
 
     try:
         db_specialty = Specialty(
-            name=specialty.name.strip(),
+            name=specialty.name,
             hospital_id=specialty.hospital_id
         )
 
@@ -51,8 +51,8 @@ def update_specialty(db: Session, updated_specialty: SpecialtyUpdate, specialty_
         return None
 
     try:
-        if updated_specialty.name.strip():
-            specialty.name = updated_specialty.name.strip()
+        if updated_specialty.name:
+            specialty.name = updated_specialty.name
 
         db.commit()
         db.refresh(specialty)
