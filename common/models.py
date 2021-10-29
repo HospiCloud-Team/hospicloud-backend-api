@@ -101,6 +101,7 @@ class Doctor(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
     schedule = Column(String(250))
+    schedule_id = Column(Integer, ForeignKey("schedule.id"))
 
     specialties = relationship(
         "Specialty",
