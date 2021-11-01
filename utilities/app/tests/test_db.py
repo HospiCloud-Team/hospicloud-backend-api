@@ -64,6 +64,12 @@ def test_db():
             location=location,
             location_id=1,
             schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+        ),
+        Hospital(
+            name="Prius hospital",
+            location=location,
+            location_id=1,
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
         )
     ]
 
@@ -74,9 +80,9 @@ def test_db():
     ]
 
     db.add(location)
-    db.bulk_save_objects(hospitals)
-    db.bulk_save_objects(specialties)
-    db.bulk_save_objects(templates)
+    db.add_all(hospitals)
+    db.add_all(specialties)
+    db.add_all(templates)
     db.commit()
 
     yield
