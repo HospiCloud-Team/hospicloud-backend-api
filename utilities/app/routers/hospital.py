@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from common.schemas.hospital import Hospital, HospitalIn, HospitalUpdate
@@ -59,8 +59,8 @@ async def get_hospital(hospital_id: int, db: Session = Depends(get_db)):
     status_code=status.HTTP_200_OK,
     tags=["hospitals"]
 )
-async def get_hospitals(db: Session = Depends(get_db)):
-    return hospitals.get_hospitals(db)
+async def get_hospitals(db: Session = Depends(get_db), name: Optional[str] = None):
+    return hospitals.get_hospitals(db, name)
 
 
 @router.put(
