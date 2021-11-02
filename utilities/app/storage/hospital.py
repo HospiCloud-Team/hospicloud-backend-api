@@ -46,7 +46,11 @@ def get_hospital_by_id(db: Session, hospital_id: int) -> Hospital:
     return db.query(Hospital).filter(Hospital.id == hospital_id).first()
 
 
-def get_hospitals(db: Session) -> List[Hospital]:
+def get_hospitals(db: Session, name: str) -> List[Hospital]:
+    if name:
+        expression = f'%{name}%'
+        return db.query(Hospital).where(Hospital.name.ilike(expression)).all()
+
     return db.query(Hospital).all()
 
 

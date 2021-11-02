@@ -47,7 +47,7 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "message": f'User with email {user.email} already exists'}
+                    "message": "Email is already used"}
             )
 
         if user.user_role == UserRole.patient:

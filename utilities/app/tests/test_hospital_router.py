@@ -46,6 +46,16 @@ def test_get_hospitals(test_db):
     assert len(data) > 1
 
 
+def test_get_hospitals_by_name(test_db):
+    keyword = "pri"
+
+    response = client.get(f'/hospitals?name={keyword}')
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 2
+
+
 def test_update_hospital(test_db):
     payload = {
         "name": "Updated hospital",
