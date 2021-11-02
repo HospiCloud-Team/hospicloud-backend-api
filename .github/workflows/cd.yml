@@ -1,0 +1,99 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CD
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  push:
+      runs-on: ubuntu-latest
+
+      env:
+          REGISTRY_NAME : gcr.io/${{ secrets.GCP_PROJECT }}/
+          PROJECT_NAME : hospicloud
+          VERSION: latest
+          CLOUDSDK_PYTHON: /usr/bin/python
+          LD_LIBRARY_PATH: /usr/local/lib
+
+      steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT }}
+          service_account_key: ${{ secrets.GCF_SA_DEPLOYER }}
+          export_default_credentials: true
+
+      - name: Authorize Docker push
+        run: |
+          gcloud auth configure-docker
+
+      - name: Build Services
+        run: |
+          docker-compose -f docker-compose.gcp.yml build
+          
+      - name: List images
+        run: |
+          docker images
+          
+      - name: Push Services
+        run: |
+          docker-compose -f docker-compose.gcp.yml push
+  
+  release:
+    runs-on: ubuntu-latest
+    
+    needs: [push]
+    
+    env:
+          REGISTRY_NAME : gcr.io/${{ secrets.GCP_PROJECT }}/
+          PROJECT_NAME : hospicloud
+          VERSION: latest
+
+    steps:
+      - uses: actions/checkout@v2
+    
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT }}
+          service_account_key: ${{ secrets.GCF_SA_DEPLOYER }}
+          export_default_credentials: true
+      
+      - name: Deploy Appointments Service to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v0.3.0
+        with:
+          image: ${{ env.REGISTRY_NAME }}${{ env.PROJECT_NAME }}-sign:${{ env.VERSION }}
+          service: hospicloud-appointments
+          region: us-east1
+          
+      - name: Deploy Checkups Service to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v0.3.0
+        with:
+          image: ${{ env.REGISTRY_NAME }}${{ env.PROJECT_NAME }}-parser:${{ env.VERSION }}
+          service: hospicloud-checkups
+          region: us-east1
+      
+      - name: Deploy Users to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v0.3.0
+        with:
+          image: ${{ env.REGISTRY_NAME }}${{ env.PROJECT_NAME }}-services:${{ env.VERSION }}
+          service: hospicloud-users
+          region: us-east1
+          
+      - name: Deploy Utilities Service to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v0.3.0
+        with:
+          image: ${{ env.REGISTRY_NAME }}${{ env.PROJECT_NAME }}-emission:${{ env.VERSION }}
+          service: hospicloud-utilities
+          region: us-east1
+          
