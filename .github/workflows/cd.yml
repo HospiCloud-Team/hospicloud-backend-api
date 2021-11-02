@@ -73,27 +73,27 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v0.3.0
         with:
           image: ${{ env.REGISTRY_NAME }}${{ env.PROJECT_NAME }}-appointments:${{ env.VERSION }}
-          service: hospicloud-appointments
+          service: ${{ env.PROJECT_NAME }}-appointments
           region: us-east1
           
       - name: Deploy Checkups Service to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v0.3.0
         with:
           image: ${{ env.REGISTRY_NAME }}${{ env.PROJECT_NAME }}-checkups:${{ env.VERSION }}
-          service: hospicloud-checkups
+          service: ${{ env.PROJECT_NAME }}-checkups
           region: us-east1
       
       - name: Deploy Users to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v0.3.0
         with:
           image: ${{ env.REGISTRY_NAME }}${{ env.PROJECT_NAME }}-users:${{ env.VERSION }}
-          service: hospicloud-users
+          service: ${{ env.PROJECT_NAME }}-users
           region: us-east1
           
       - name: Deploy Utilities Service to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v0.3.0
         with:
           image: ${{ env.REGISTRY_NAME }}${{ env.PROJECT_NAME }}-utilities:${{ env.VERSION }}
-          service: hospicloud-utilities
+          service: ${{ env.PROJECT_NAME }}-utilities
           region: us-east1
           
