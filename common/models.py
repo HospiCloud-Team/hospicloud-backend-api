@@ -103,7 +103,6 @@ class Doctor(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
     schedule = Column(String(250))
-    schedule_id = Column(Integer, ForeignKey("schedule.id"))
 
     specialties = relationship(
         "Specialty",
@@ -162,16 +161,6 @@ class Template(Base):
     file_upload_fields = Column(Integer)
     created_at = Column(DateTime, default=datetime.datetime.now())
     updated_at = Column(DateTime)
-
-
-class Schedule(Base):
-    __tablename__ = "schedule"
-    id = Column(Integer, primary_key=True)
-    start_day = Column(String)
-    end_day = Column(String)
-    start_time = Column(Time)
-    end_time = Column(Time)
-    all_day = Column(Boolean, default=False)
 
 
 class UserRole(str, enum.Enum):
