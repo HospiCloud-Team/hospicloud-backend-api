@@ -1,0 +1,23 @@
+version: "2.0"
+services:
+  utilities:
+    build:
+      context: ./
+      dockerfile: utilities/Dockerfile
+    image: ${REGISTRY_NAME}${PROJECT_NAME}-utilities:${VERSION}
+    environment:
+      - PORT
+  checkups:
+    build:
+      context: ./
+      dockerfile: checkups/Dockerfile
+    image: ${REGISTRY_NAME}${PROJECT_NAME}-checkups:${VERSION}
+    environment:
+      - PORT
+  users:
+    build:
+      context: ./
+      dockerfile: users/Dockerfile
+    image: ${REGISTRY_NAME}${PROJECT_NAME}-users:${VERSION}
+    environment:
+      - PORT
