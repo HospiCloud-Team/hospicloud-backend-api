@@ -4,8 +4,8 @@ from typing import List, Optional
 from sqlalchemy.sql.elements import and_
 
 from common.schemas.specialty import Specialty, SpecialtyIn, SpecialtyUpdate
-from common.models import Specialty, Hospital
-from dependencies import Session
+from common.models.specialty import Specialty
+from sqlalchemy.orm import Session
 
 
 def create_specialty(db: Session, specialty: SpecialtyIn) -> Specialty:

@@ -5,8 +5,8 @@ import datetime
 from sqlalchemy.sql.elements import and_
 
 from common.schemas.template import Template, TemplateIn, TemplateUpdate
-from common.models import Template
-from dependencies import Session
+from common.models.template import Template
+from sqlalchemy.orm import Session
 
 VALID_HEADER_TYPE = {
     "string": "str",

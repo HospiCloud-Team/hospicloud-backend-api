@@ -3,9 +3,8 @@ import datetime
 from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.sql import func
 from sqlalchemy.schema import DropTable
-from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.types import JSON, DateTime, Date, Enum, Integer, String, Boolean, Time
-from sqlalchemy.orm import backref, declarative_base, relationship, sessionmaker, Session
+from sqlalchemy.orm import backref, declarative_base, relationship, sessionmaker
 
 from common.database import start_engine
 
@@ -25,10 +24,8 @@ class Admin(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
 
-    user = relationship(
-        "User",
-        uselist=False
-    )
+    user = relationship("User", uselist=False)
+    hospital = relationship("Hospital", uselist=False)
 
 
 class Checkup(Base):
@@ -40,9 +37,11 @@ class Checkup(Base):
     data = Column(JSON)
     date = Column(DateTime, default=datetime.datetime.now())
     patient = relationship(
-        "Patient", back_populates="checkups", lazy="joined", join_depth=2)
+        "Patient", back_populates="checkups", lazy="joined", join_depth=2
+    )
     doctor = relationship(
-        "Doctor", back_populates="checkups", lazy="joined", join_depth=2)
+        "Doctor", back_populates="checkups", lazy="joined", join_depth=2
+    )
 
 
 class Province(str, enum.Enum):
@@ -93,7 +92,7 @@ class Hospital(Base):
         "Location",
         backref=backref("location", uselist=False),
         lazy="joined",
-        join_depth=2
+        join_depth=2,
     )
 
 
@@ -106,16 +105,9 @@ class Doctor(Base):
     schedule_id = Column(Integer, ForeignKey("schedule.id"))
 
     specialties = relationship(
-        "Specialty",
-        secondary=doctor_to_specialty_association,
-        back_populates="doctors"
+        "Specialty", secondary=doctor_to_specialty_association, back_populates="doctors"
     )
-    user = relationship(
-        "User",
-        uselist=False,
-        lazy="joined",
-        join_depth=2
-    )
+    user = relationship("User", uselist=False, lazy="joined", join_depth=2)
     checkups = relationship("Checkup")
 
 
@@ -128,7 +120,7 @@ class Specialty(Base):
     doctors = relationship(
         "Doctor",
         secondary=doctor_to_specialty_association,
-        back_populates="specialties"
+        back_populates="specialties",
     )
 
 
@@ -192,12 +184,7 @@ class Patient(Base):
     blood_type = Column(Enum(BloodType))
     medical_background = Column(String)
 
-    user = relationship(
-        "User",
-        back_populates="patient",
-        lazy="joined",
-        join_depth=2
-    )
+    user = relationship("User", back_populates="patient", lazy="joined", join_depth=2)
 
     checkups = relationship("Checkup")
 
@@ -223,8 +210,7 @@ class User(Base):
 
 engine = start_engine()
 
-SessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @compiles(DropTable, "postgresql")

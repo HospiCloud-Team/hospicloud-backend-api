@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
-from common.models import BloodType
 from .specialty import Specialty
 
 

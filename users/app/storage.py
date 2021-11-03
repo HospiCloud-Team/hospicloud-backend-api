@@ -3,9 +3,14 @@ import datetime
 import traceback
 from typing import List
 
-from dependencies import Session
+from sqlalchemy.orm import Session
 from schemas.user import User, UserIn, UserRole
-from common.models import Base, Patient, User, Admin, Doctor, Specialty
+from common.models.base import Base
+from common.models.patient import Patient
+from common.models.user import User
+from common.models.admin import Admin 
+from common.models.doctor import Doctor
+from common.models.specialty import Specialty
 from utils import generate_password
 
 ALLOWED_USER_UPDATES = ["name", "last_name",

@@ -5,7 +5,8 @@ from starlette.responses import JSONResponse
 
 from storage import templates
 from common.schemas.template import Template, TemplateIn, TemplateUpdate
-from dependencies import get_db, Session
+from dependencies import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 

@@ -7,7 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import storage
 from schemas.user import UserIn, User, UserRole, UserUpdate
-from dependencies import get_db, Session
+from dependencies import get_db
+from sqlalchemy.orm import Session
 
 app = FastAPI(
     title="Users",

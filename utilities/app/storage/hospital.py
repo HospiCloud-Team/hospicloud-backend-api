@@ -3,8 +3,9 @@ import datetime
 from typing import List
 from common.schemas.hospital import Hospital, HospitalIn, HospitalUpdate
 from common.schemas.location import Province
-from common.models import Hospital, Location
-from dependencies import Session
+from common.models.hospital import Hospital
+from common.models.location import Location
+from sqlalchemy.orm import Session
 
 
 def is_province_valid(province: str) -> bool:

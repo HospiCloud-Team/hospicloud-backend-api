@@ -2,7 +2,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from common.schemas.hospital import Hospital, HospitalIn, HospitalUpdate
-from dependencies import get_db, Session
+from dependencies import get_db
+from sqlalchemy.orm import Session
 from storage import hospital as hospitals
 
 router = APIRouter()

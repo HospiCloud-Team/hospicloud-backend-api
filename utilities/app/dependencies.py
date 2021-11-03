@@ -1,5 +1,4 @@
-from sqlalchemy.engine import create
-from common.models import SessionLocal, Session, create_tables
+from common.database import SessionLocal, create_tables
 
 
 def get_db():

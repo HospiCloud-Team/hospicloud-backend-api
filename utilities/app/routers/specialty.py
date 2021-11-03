@@ -5,7 +5,8 @@ from fastapi.responses import JSONResponse
 
 from common.schemas.specialty import Specialty, SpecialtyIn, SpecialtyUpdate
 from storage import specialty as specialties
-from dependencies import get_db, Session
+from dependencies import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
