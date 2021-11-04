@@ -2,9 +2,9 @@ import datetime
 from typing import Optional
 from enum import Enum
 from pydantic import BaseModel, EmailStr
-from schemas.patient import PatientIn, Patient, PatientUpdate
-from schemas.admin import Admin, AdminBase
-from schemas.doctor import DoctorIn, Doctor, DoctorUpdate
+from .patient import PatientIn, Patient, PatientUpdate
+from .admin import Admin, AdminBase
+from .doctor import DoctorIn, Doctor, DoctorUpdate
 
 
 class UserRole(str, Enum):
