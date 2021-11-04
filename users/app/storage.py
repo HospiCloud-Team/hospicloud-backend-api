@@ -155,3 +155,7 @@ def update_user(db: Session, user_id: int, updated_user: UserUpdate) -> User:
 
 def do_key_and_value_exist(key, value) -> bool:
     return key is not None and value is not None
+
+
+def get_doctors_by_hospital_id(db: Session, hospital_id: int) -> List[User]:
+    return db.query(Doctor).where(Doctor.hospital_id == hospital_id).all()

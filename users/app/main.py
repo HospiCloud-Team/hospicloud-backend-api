@@ -65,6 +65,16 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
 
 
 @app.get(
+    "/users/doctors",
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["users"]
+)
+async def get_doctors_by_hospital_id(hospital_id: int, db: Session = Depends(get_db)):
+    return storage.get_doctors_by_hospital_id(db, hospital_id)
+
+
+@app.get(
     "/users",
     response_model=List[User],
     status_code=status.HTTP_200_OK,
