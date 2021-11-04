@@ -1,7 +1,5 @@
 from fastapi.testclient import TestClient
 from fastapi import status
-from starlette.status import HTTP_200_OK
-
 from main import app
 from dependencies import get_db
 from tests.test_db import override_get_db, test_db
@@ -40,14 +38,14 @@ def test_create_doctor(test_db):
         "document_number": "11111111111",
         "date_of_birth": "2000-06-27",
         "doctor": {
+            "schedule": "L, X, V 8:00 - 12:00, 4:00 - 6:00",
             "hospital_id": 1,
-            "schedule_id": 1,
             "specialty_ids": [1, 2]
         }
     }
 
     response = client.post("/users", json=payload)
-    
+
     assert response.status_code == status.HTTP_201_CREATED
 
 
