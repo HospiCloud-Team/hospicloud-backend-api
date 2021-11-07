@@ -158,4 +158,4 @@ def do_key_and_value_exist(key, value) -> bool:
 
 
 def get_doctors_by_hospital_id(db: Session, hospital_id: int) -> List[User]:
-    return db.query(Doctor).where(Doctor.hospital_id == hospital_id).all()
+    return db.query(User).join(Doctor).filter(Doctor.hospital_id == hospital_id).all()

@@ -66,7 +66,7 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
 
 @app.get(
     "/users/doctors",
-    response_model=List[DoctorOutput],
+    response_model=List[User],
     status_code=status.HTTP_200_OK,
     response_model_exclude_none=True,
     tags=["users"]
