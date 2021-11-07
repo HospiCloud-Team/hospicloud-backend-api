@@ -2,9 +2,9 @@ import datetime
 from typing import Optional
 from enum import Enum
 from pydantic import BaseModel, EmailStr
-from .patient import PatientIn, Patient, PatientUpdate
+from .patient import PatientIn, Patient, PatientUpdate, PatientBase
 from .admin import Admin, AdminBase
-from .doctor import DoctorIn, Doctor, DoctorUpdate
+from .doctor import DoctorIn, Doctor, DoctorUpdate, DoctorBase
 
 
 class UserRole(str, Enum):
@@ -51,6 +51,22 @@ class User(UserBase):
     patient: Optional[Patient] = None
     admin: Optional[Admin] = None
     doctor: Optional[Doctor] = None
+
+    class Config:
+        orm_mode = True
+
+
+class DoctorOutput(DoctorBase):
+    id: int
+    user: User
+
+    class Config:
+        orm_mode = True
+
+
+class PatientOutput(PatientBase):
+    id: int
+    user: User
 
     class Config:
         orm_mode = True

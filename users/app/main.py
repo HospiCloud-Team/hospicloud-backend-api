@@ -4,7 +4,7 @@ from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import storage
-from common.schemas.user import UserIn, User, UserRole, UserUpdate
+from common.schemas.user import UserIn, User, UserRole, UserUpdate, DoctorOutput
 from dependencies import get_db, Session
 
 app = FastAPI(
@@ -66,6 +66,7 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
 
 @app.get(
     "/users/doctors",
+    response_model=List[DoctorOutput],
     status_code=status.HTTP_200_OK,
     response_model_exclude_none=True,
     tags=["users"]

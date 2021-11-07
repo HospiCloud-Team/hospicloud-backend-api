@@ -143,6 +143,5 @@ def test_get_doctors_by_hospital_id(test_db):
     response = client.get("/users/doctors?hospital_id=1")
     data = response.json()
 
-    print(data)
     assert response.status_code == status.HTTP_200_OK
     assert len(data) == 2
