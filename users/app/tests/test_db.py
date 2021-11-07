@@ -75,7 +75,9 @@ def test_db():
         )
     ]
 
-    hospital = Hospital(name="Mock hospital")
+    hospital = Hospital(
+        name="Mock hospital", description="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+    )
 
     specialties = [
         Specialty(name="pediatrician"),
