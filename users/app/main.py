@@ -9,10 +9,7 @@ import storage
 from schemas.user import UserIn, User, UserRole, UserUpdate
 from dependencies import get_db, Session
 
-app = FastAPI(
-    title="Users",
-    description="Users service for HospiCloud app."
-)
+app = FastAPI(title="Users", description="Users service for HospiCloud app.")
 
 origins = ["*"]
 
@@ -28,8 +25,8 @@ app.add_middleware(
 @app.get("/")
 async def home():
     return JSONResponse(
-        status_code=status.HTTP_200_OK, content={
-            "container": "users", "message": "Hello World!"}
+        status_code=status.HTTP_200_OK,
+        content={"container": "users", "message": "Hello World!"},
     )
 
 
@@ -38,7 +35,7 @@ async def home():
     response_model=User,
     status_code=status.HTTP_201_CREATED,
     response_model_exclude_none=True,
-    tags=["users"]
+    tags=["users"],
 )
 async def create_user(user: UserIn, db: Session = Depends(get_db)):
     try:
@@ -46,8 +43,7 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
         if existing_user:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={
-                    "message": "Email is already used"}
+                content={"message": "Email is already used"},
             )
 
         if user.user_role == UserRole.patient:
@@ -62,7 +58,7 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
 
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"message": "Internal server error, try again later"}
+            content={"message": "Internal server error, try again later"},
         )
 
 
@@ -71,9 +67,11 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
     response_model=List[User],
     status_code=status.HTTP_200_OK,
     response_model_exclude_none=True,
-    tags=["users"]
+    tags=["users"],
 )
-async def get_users(db: Session = Depends(get_db), user_role: Optional[UserRole] = None):
+async def get_users(
+    db: Session = Depends(get_db), user_role: Optional[UserRole] = None
+):
     return storage.get_users(db, user_role)
 
 
@@ -82,14 +80,13 @@ async def get_users(db: Session = Depends(get_db), user_role: Optional[UserRole]
     response_model=User,
     status_code=status.HTTP_200_OK,
     response_model_exclude_none=True,
-    tags=["users"]
+    tags=["users"],
 )
 async def get_user(user_id: int, db: Session = Depends(get_db)):
     db_user = storage.get_user(db, user_id)
     if db_user is None:
         return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "User not found"}
+            status_code=status.HTTP_404_NOT_FOUND, content={"message": "User not found"}
         )
 
     return db_user
@@ -100,7 +97,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
     response_model=User,
     status_code=status.HTTP_200_OK,
     response_model_exclude_none=True,
-    tags=["users"]
+    tags=["users"],
 )
 async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
     try:
@@ -108,14 +105,14 @@ async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_
         if db_user is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content={"message": "User not found"}
+                content={"message": "User not found"},
             )
 
         return db_user
     except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"message": "Internal server error, try again later"}
+            content={"message": "Internal server error, try again later"},
         )
 
 
@@ -124,7 +121,7 @@ async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_
     response_model=User,
     status_code=status.HTTP_200_OK,
     response_model_exclude_none=True,
-    tags=["users"]
+    tags=["users"],
 )
 async def delete_user(user_id: int, db: Session = Depends(get_db)):
     try:
@@ -132,12 +129,12 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
         if db_user is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content={"message": "User not found"}
+                content={"message": "User not found"},
             )
 
         return db_user
     except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"message": "Internal server error, try again later"}
+            content={"message": "Internal server error, try again later"},
         )
