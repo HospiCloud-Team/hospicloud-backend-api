@@ -56,7 +56,7 @@ class User(UserBase):
         orm_mode = True
 
 
-class DoctorOutput(DoctorBase):
+class DoctorOut(DoctorBase):
     id: int
     user: User
 

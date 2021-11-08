@@ -4,7 +4,7 @@ from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import storage
-from common.schemas.user import UserIn, User, UserRole, UserUpdate, DoctorOutput
+from common.schemas.user import UserIn, User, UserRole, UserUpdate, DoctorOut
 from dependencies import get_db, Session
 
 app = FastAPI(
