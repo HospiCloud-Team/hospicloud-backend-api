@@ -2,10 +2,8 @@ import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pytest
-
-
 from common.database import start_engine
-from common.models import Base, Hospital, User, Patient, Specialty, Schedule
+from common.models import Base, Hospital, User, Patient, Specialty
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -49,17 +47,10 @@ def test_db():
         Specialty(name="general")
     ]
 
-    schedule = Schedule(
-        start_day="monday",
-        end_day="friday",
-        all_day=True
-    )
-
     db.add(patient_user)
     db.add(patient)
     db.add(hospital)
     db.bulk_save_objects(specialties)
-    db.add(schedule)
     db.commit()
 
     yield

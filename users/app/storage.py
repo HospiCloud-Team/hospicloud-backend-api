@@ -2,9 +2,8 @@ import bcrypt
 import datetime
 import traceback
 from typing import List
-
 from dependencies import Session
-from schemas.user import User, UserIn, UserRole
+from common.schemas.user import User, UserIn, UserRole, UserUpdate
 from common.models import Base, Patient, User, Admin, Doctor, Specialty
 from utils import generate_password
 
@@ -13,7 +12,7 @@ ALLOWED_USER_UPDATES = ["name", "last_name",
 
 ALLOWED_PATIENT_UPDATES = ["medical_background"]
 
-ALLOWED_DOCTOR_UPDATES = ["schedule_id", "specialty_ids"]
+ALLOWED_DOCTOR_UPDATES = ["schedule", "specialty_ids"]
 
 
 def create_patient(db: Session, user: UserIn) -> User:
@@ -123,7 +122,7 @@ def delete_user(db: Session, user_id: int) -> User:
     return user
 
 
-def update_user(db: Session, user_id: int, updated_user: User) -> User:
+def update_user(db: Session, user_id: int, updated_user: UserUpdate) -> User:
     user = get_user(db, user_id)
     if not user:
         return None

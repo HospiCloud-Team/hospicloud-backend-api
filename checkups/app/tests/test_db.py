@@ -5,7 +5,7 @@ import pytest
 
 from main import app
 from common.database import start_engine
-from common.models import Base, User, Patient, Doctor, Template
+from common.models import Base, User, Patient, Doctor, Template, Hospital
 from dependencies import get_db
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -24,6 +24,7 @@ TestingSessionLocal = sessionmaker(
 def test_db():
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
+
     doctor_user = User(
         user_role="doctor",
         document_type="national_id",
@@ -33,6 +34,7 @@ def test_db():
         document_number="12345654321",
         date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
     )
+
     patient_user = User(
         document_type="national_id",
         name="test",
@@ -41,8 +43,17 @@ def test_db():
         document_number="12345654321",
         date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
     )
-    doctor = Doctor(user=doctor_user)
+
+    doctor = Doctor(
+        user=doctor_user,
+        hospital_id=1,
+        schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+    )
+
+    hospital = Hospital(name="Public hospital")
+
     patient = Patient(user=patient_user, blood_type="a_plus")
+
     template = Template(
         numeric_fields=0,
         alphanumeric_fields=1,
@@ -51,6 +62,7 @@ def test_db():
     )
     db.add(doctor_user)
     db.add(patient_user)
+    db.add(hospital)
     db.add(doctor)
     db.add(patient)
     db.add(template)

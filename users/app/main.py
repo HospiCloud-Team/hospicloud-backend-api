@@ -1,12 +1,10 @@
 import traceback
 from typing import List, Optional
-
 from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
 import storage
-from schemas.user import UserIn, User, UserRole, UserUpdate
+from common.schemas.user import UserIn, User, UserRole, UserUpdate
 from dependencies import get_db, Session
 
 app = FastAPI(
