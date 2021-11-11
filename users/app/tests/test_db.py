@@ -36,6 +36,7 @@ def test_db():
         email="test@gmail.com",
         document_number="12345654321",
         date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+        created_at=datetime.datetime.now(datetime.timezone.utc)
     )
 
     patient = Patient(user=patient_user, blood_type="a_plus")

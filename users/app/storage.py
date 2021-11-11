@@ -22,10 +22,12 @@ def create_patient(db: Session, user: UserIn) -> User:
 
     try:
         db_user = User(
-            **user.dict(exclude={"patient"}), password=hashed_password)
-        db_patient = Patient(**user.patient.dict(), user=db_user)
+            **user.dict(exclude={"patient"}), password=hashed_password
+        )
 
-        db_patient.created_at = get_current_time()
+        db_user.created_at = get_current_time()
+
+        db_patient = Patient(**user.patient.dict(), user=db_user)
 
         db.add(db_user)
         db.add(db_patient)
@@ -46,10 +48,12 @@ def create_admin(db: Session, user: UserIn) -> User:
 
     try:
         db_user = User(
-            **user.dict(exclude={"admin"}), password=hashed_password)
-        db_admin = Admin(**user.admin.dict(), user=db_user)
+            **user.dict(exclude={"admin"}), password=hashed_password
+        )
 
-        db_admin.created_at = get_current_time()
+        db_user.created_at = get_current_time()
+
+        db_admin = Admin(**user.admin.dict(), user=db_user)
 
         db.add(db_user)
         db.add(db_admin)
@@ -70,7 +74,11 @@ def create_doctor(db: Session, user: UserIn) -> User:
 
     try:
         db_user = User(
-            **user.dict(exclude={"doctor"}), password=hashed_password)
+            **user.dict(exclude={"doctor"}), password=hashed_password
+        )
+
+        db_user.created_at = get_current_time()
+
         db_doctor = Doctor(
             **user.doctor.dict(exclude={"specialty_ids"}), user=db_user)
 
@@ -78,7 +86,6 @@ def create_doctor(db: Session, user: UserIn) -> User:
             Specialty.id.in_(user.doctor.specialty_ids)).all()
 
         db_doctor.specialties = specialties
-        db_doctor.created_at = get_current_time()
 
         db.add(db_user)
         db.add(db_doctor)
