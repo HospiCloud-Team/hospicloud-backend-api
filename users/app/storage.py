@@ -6,6 +6,7 @@ from dependencies import Session
 from common.schemas.user import User, UserIn, UserRole, UserUpdate
 from common.models import Base, Patient, User, Admin, Doctor, Specialty
 from utils import generate_password
+from common.utils import get_current_time
 
 ALLOWED_USER_UPDATES = ["name", "last_name",
                         "date_of_birth", "document_number"]
@@ -21,7 +22,11 @@ def create_patient(db: Session, user: UserIn) -> User:
 
     try:
         db_user = User(
-            **user.dict(exclude={"patient"}), password=hashed_password)
+            **user.dict(exclude={"patient"}), password=hashed_password
+        )
+
+        db_user.created_at = get_current_time()
+
         db_patient = Patient(**user.patient.dict(), user=db_user)
 
         db.add(db_user)
@@ -43,7 +48,11 @@ def create_admin(db: Session, user: UserIn) -> User:
 
     try:
         db_user = User(
-            **user.dict(exclude={"admin"}), password=hashed_password)
+            **user.dict(exclude={"admin"}), password=hashed_password
+        )
+
+        db_user.created_at = get_current_time()
+
         db_admin = Admin(**user.admin.dict(), user=db_user)
 
         db.add(db_user)
@@ -65,7 +74,11 @@ def create_doctor(db: Session, user: UserIn) -> User:
 
     try:
         db_user = User(
-            **user.dict(exclude={"doctor"}), password=hashed_password)
+            **user.dict(exclude={"doctor"}), password=hashed_password
+        )
+
+        db_user.created_at = get_current_time()
+
         db_doctor = Doctor(
             **user.doctor.dict(exclude={"specialty_ids"}), user=db_user)
 
@@ -141,7 +154,7 @@ def update_user(db: Session, user_id: int, updated_user: UserUpdate) -> User:
                 if do_key_and_value_exist(key, value) and key in ALLOWED_DOCTOR_UPDATES:
                     setattr(user.doctor, key, value)
 
-        user.updated_at = datetime.datetime.now()
+        user.updated_at = get_current_time()
 
         db.commit()
         db.refresh(user)

@@ -1,11 +1,11 @@
 import json
 import traceback
-import datetime
 
 from sqlalchemy.sql.elements import and_
 
 from common.schemas.template import Template, TemplateIn, TemplateUpdate
 from common.models import Template
+from common.utils import get_current_time
 from dependencies import Session
 
 VALID_HEADER_TYPE = {
@@ -22,6 +22,7 @@ def create_template(db: Session, template: TemplateIn) -> Template:
 
     try:
         db_template = Template(**template.dict())
+        db_template.created_at = get_current_time()
 
         db.add(db_template)
 
@@ -72,8 +73,9 @@ def update_template(db: Session, template_id: int, updated_template: TemplateUpd
 
             template.numeric_fields = numeric_fields
             template.alphanumeric_fields = alphanumeric_fields
+            template.headers = updated_template.headers
 
-        template.updated_at = datetime.datetime.now()
+        template.updated_at = get_current_time()
 
         db.commit()
         db.refresh(template)
