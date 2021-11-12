@@ -1,9 +1,9 @@
 import traceback
-import datetime
 from typing import List
 from common.schemas.hospital import Hospital, HospitalIn, HospitalUpdate
 from common.schemas.location import Province
 from common.models import Hospital, Location
+from common.utils import get_current_time
 from dependencies import Session
 
 
@@ -22,8 +22,12 @@ def create_hospital(db: Session, hospital: HospitalIn) -> Hospital:
             raise ValueError("Invalid province")
 
         db_location = Location(**hospital.location.dict())
+
         db_hospital = Hospital(
-            **hospital.dict(exclude={"location"}), location=db_location)
+            **hospital.dict(exclude={"location"}),
+            location=db_location
+        )
+        db_hospital.created_at = get_current_time()
 
         db.add(db_location)
         db.add(db_hospital)
@@ -76,7 +80,7 @@ def update_hospital(db: Session, hospital_id: int, updated_hospital: HospitalUpd
 
                 hospital.location.province = updated_hospital.location.province
 
-        hospital.updated_at = datetime.datetime.now()
+        hospital.updated_at = get_current_time()
 
         db.commit()
         db.refresh(hospital)
