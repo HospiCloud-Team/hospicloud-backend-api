@@ -14,6 +14,7 @@ def test_create_hospital(test_db):
     payload = {
         "name": "Public hospital",
         "schedule": "L, X, V 8:00 - 12:00, 4:00 - 6:00",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
         "location": {
             "address": "Av. Abraham Lincoln 2, Santo Domingo 10101",
             "province": "santo_domingo"

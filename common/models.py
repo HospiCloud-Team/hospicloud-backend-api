@@ -84,6 +84,7 @@ class Hospital(Base):
     __tablename__ = "hospital"
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    description = Column(String)
     schedule = Column(String(250))
     location_id = Column(Integer, ForeignKey("location.id"))
     created_at = Column(DateTime(timezone=True))

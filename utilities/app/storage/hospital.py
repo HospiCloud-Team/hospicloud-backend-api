@@ -67,6 +67,9 @@ def update_hospital(db: Session, hospital_id: int, updated_hospital: HospitalUpd
         if updated_hospital.name:
             hospital.name = updated_hospital.name
 
+        if updated_hospital.description:
+            hospital.description = updated_hospital.description
+
         if updated_hospital.schedule:
             hospital.schedule = updated_hospital.schedule
 

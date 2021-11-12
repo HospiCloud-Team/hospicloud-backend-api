@@ -137,3 +137,11 @@ def test_update_user(test_db):
     assert data["document_number"] == "12345654399"
     assert data["patient"]["medical_background"] == "This is an update!"
     assert data["updated_at"] is not None
+
+
+def test_get_doctors_by_hospital_id(test_db):
+    response = client.get("/users/doctors?hospital_id=1")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 2
