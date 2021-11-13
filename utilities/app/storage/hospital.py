@@ -114,7 +114,7 @@ def delete_hospital(db: Session, hospital_id: int) -> Hospital:
 def get_admins(db: Session, hospital_id: int) -> List[User]:
     hospital = get_hospital_by_id(db, hospital_id)
     if not hospital:
-        return ValueError("hospital doesn't exist")
+        raise ValueError("hospital doesn't exist")
 
     return db.query(User).join(Admin).filter(Admin.hospital_id == hospital_id).all()
 
@@ -122,6 +122,6 @@ def get_admins(db: Session, hospital_id: int) -> List[User]:
 def get_doctors(db: Session, hospital_id: int) -> List[User]:
     hospital = get_hospital_by_id(db, hospital_id)
     if not hospital:
-        return ValueError("hospital doesn't exist")
+        raise ValueError("hospital doesn't exist")
 
     return db.query(User).join(Doctor).filter(Doctor.hospital_id == hospital_id).all()
