@@ -4,7 +4,7 @@ from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import storage
-from common.schemas.user import UserIn, User, UserRole, UserUpdate
+from common.schemas.user import UserIn, User, UserRole, UserUpdate, DoctorOut
 from dependencies import get_db, Session
 
 app = FastAPI(
@@ -62,6 +62,17 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal server error, try again later"}
         )
+
+
+@app.get(
+    "/users/doctors",
+    response_model=List[User],
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["users"]
+)
+async def get_doctors_by_hospital_id(hospital_id: int, db: Session = Depends(get_db)):
+    return storage.get_doctors_by_hospital_id(db, hospital_id)
 
 
 @app.get(

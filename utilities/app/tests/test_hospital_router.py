@@ -13,6 +13,7 @@ def test_create_hospital(test_db):
     payload = {
         "name": "Public hospital",
         "schedule": "L, X, V 8:00 - 12:00, 4:00 - 6:00",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
         "location": {
             "address": "Av. Abraham Lincoln 2, Santo Domingo 10101",
             "province": "santo_domingo"
@@ -20,7 +21,6 @@ def test_create_hospital(test_db):
     }
 
     response = client.post("/hospitals", json=payload)
-    data = response.json()
 
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -90,6 +90,7 @@ def test_update_certain_hospital_fields(test_db):
     assert response.status_code == status.HTTP_200_OK
     assert data["name"] == "Updated hospital name"
     assert data["location"]["province"] == "samana"
+    assert data["updated_at"] is not None
 
 
 def test_delete_hospital(test_db):

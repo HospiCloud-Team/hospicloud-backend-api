@@ -8,6 +8,7 @@ from .location import LocationIn, Location, LocationUpdate
 
 class HospitalBase(BaseModel):
     name: constr(strip_whitespace=True)
+    description: str
     schedule: constr(strip_whitespace=True)
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
@@ -19,6 +20,7 @@ class HospitalIn(HospitalBase):
 
 class HospitalUpdate(BaseModel):
     name: Optional[constr(strip_whitespace=True)] = None
+    description: Optional[str] = None
     schedule: Optional[constr(strip_whitespace=True)] = None
     location: Optional[LocationUpdate] = None
 

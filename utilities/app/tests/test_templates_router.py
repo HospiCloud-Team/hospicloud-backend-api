@@ -68,8 +68,10 @@ def test_update_template(test_db):
 
     assert response.status_code == status.HTTP_200_OK
     assert data["title"] == "Updated cardiac conditions"
+    assert data["headers"] == "{\"name\":\"string\",\"last_name\":\"string\"}"
     assert data["numeric_fields"] == 0
     assert data["alphanumeric_fields"] == 2
+    assert data["updated_at"] is not None
 
 
 def test_delete_template(test_db):

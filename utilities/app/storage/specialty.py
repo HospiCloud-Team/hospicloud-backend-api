@@ -4,7 +4,7 @@ from typing import List, Optional
 from sqlalchemy.sql.elements import and_
 
 from common.schemas.specialty import Specialty, SpecialtyIn, SpecialtyUpdate
-from common.models import Specialty, Hospital
+from common.models import Specialty
 from dependencies import Session
 
 

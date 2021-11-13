@@ -82,18 +82,21 @@ def test_db():
         Hospital(
             name="Mock hospital",
             location=location,
+            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             location_id=1,
             schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
         ),
         Hospital(
             name="Private hospital",
             location=location,
+            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             location_id=1,
             schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
         ),
         Hospital(
             name="Prius hospital",
             location=location,
+            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             location_id=1,
             schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
         )
