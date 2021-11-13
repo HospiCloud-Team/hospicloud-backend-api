@@ -2,7 +2,7 @@ import traceback
 from typing import List
 from common.schemas.hospital import Hospital, HospitalIn, HospitalUpdate
 from common.schemas.location import Province
-from common.models import Hospital, Location
+from common.models import Hospital, Location, User, Admin
 from common.utils import get_current_time
 from dependencies import Session
 
@@ -98,7 +98,7 @@ def update_hospital(db: Session, hospital_id: int, updated_hospital: HospitalUpd
 def delete_hospital(db: Session, hospital_id: int) -> Hospital:
     hospital = get_hospital_by_id(db, hospital_id)
     if not hospital:
-        return None
+        raise ValueError("hospital doesn't exist")
 
     try:
         db.delete(hospital)
@@ -109,3 +109,11 @@ def delete_hospital(db: Session, hospital_id: int) -> Hospital:
         raise Exception(f'Unexpected error: {e}')
 
     return hospital
+
+
+def get_admins(db: Session, hospital_id: int) -> List[User]:
+    hospital = get_hospital_by_id(db, hospital_id)
+    if not hospital:
+        return None
+
+    return db.query(User).join(Admin).filter(Admin.hospital_id == hospital_id).all()

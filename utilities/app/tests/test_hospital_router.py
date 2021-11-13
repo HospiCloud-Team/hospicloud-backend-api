@@ -1,6 +1,5 @@
 from fastapi.testclient import TestClient
 from fastapi import status
-
 from main import app
 from dependencies import get_db
 from tests.test_db import override_get_db, test_db
@@ -94,7 +93,7 @@ def test_update_certain_hospital_fields(test_db):
     assert data["updated_at"] is not None
 
 
-def delete_hospital(test_db):
+def test_delete_hospital(test_db):
     response = client.delete("/hospitals/1")
 
     assert response.status_code == status.HTTP_200_OK
@@ -102,3 +101,11 @@ def delete_hospital(test_db):
     response = client.get("/hospitals/1")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_get_admins_by_hospital_id(test_db):
+    response = client.get("/hospitals/1/admins")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) > 1
