@@ -45,8 +45,12 @@ def test_create_doctor(test_db):
     }
 
     response = client.post("/users", json=payload)
+    data: dict = response.json()
 
     assert response.status_code == status.HTTP_201_CREATED
+    assert data["doctor"] is not None
+    assert data["doctor"]["specialties"] is not None
+    assert len(data["doctor"]["specialties"]) == 2
 
 
 def test_create_admin(test_db):
