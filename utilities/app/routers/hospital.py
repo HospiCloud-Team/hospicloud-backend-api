@@ -126,3 +126,20 @@ async def get_admins_by_hospital_id(hospital_id: int, db: Session = Depends(get_
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Hospital doesn't exist"}
         )
+
+
+@router.get(
+    "/hospitals/{hospital_id}/doctors",
+    response_model=List[User],
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["hospitals"]
+)
+async def get_doctors_by_hospital_id(hospital_id: int, db: Session = Depends(get_db)):
+    try:
+        return hospitals.get_doctors(db, hospital_id)
+    except ValueError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Hospital doesn't exist"}
+        )
