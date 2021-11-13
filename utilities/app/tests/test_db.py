@@ -4,7 +4,7 @@ import pytest
 import datetime
 
 from common.database import start_engine
-from common.models import Base, Template, Specialty, Hospital, Location, User, Admin
+from common.models import Base, Template, Specialty, Hospital, Location, User, Admin, Doctor
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -108,11 +108,47 @@ def test_db():
         Specialty(name="mortician", hospital_id=2)
     ]
 
+    doctor_users = [
+        User(
+            user_role="doctor",
+            document_type="national_id",
+            name="Alejandro",
+            last_name="Smith",
+            email="test.doctor@gmail.com",
+            document_number="12345654321",
+            date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+        ),
+        User(
+            user_role="doctor",
+            document_type="national_id",
+            name="Alejandro",
+            last_name="Smith",
+            email="test.doctor2@gmail.com",
+            document_number="12345654321",
+            date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+        ),
+    ]
+
+    doctors = [
+        Doctor(
+            user_id=2,
+            hospital_id=1,
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+        ),
+        Doctor(
+            user_id=3,
+            hospital_id=1,
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+        )
+    ]
+
     db.add(location)
     db.add_all(hospitals)
     db.add_all(admins)
     db.add_all(specialties)
     db.add_all(templates)
+    db.add_all(doctor_users)
+    db.add_all(doctors)
     db.commit()
 
     yield

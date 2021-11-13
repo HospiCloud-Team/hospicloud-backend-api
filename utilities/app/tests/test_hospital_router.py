@@ -108,4 +108,24 @@ def test_get_admins_by_hospital_id(test_db):
     data = response.json()
 
     assert response.status_code == status.HTTP_200_OK
-    assert len(data) > 1
+    assert len(data) == 2
+
+
+def test_get_admins_hospital_not_found(test_db):
+    response = client.get("/hospitals/123/admins")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_get_doctors_by_hospital_id(test_db):
+    response = client.get("/hospitals/1/doctors")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 2
+
+
+def test_get_doctors_hospital_not_found(test_db):
+    response = client.get("/hospitals/123/doctors")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
