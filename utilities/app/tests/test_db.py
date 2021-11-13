@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pytest
+import datetime
 
 from common.database import start_engine
-from common.models import Base, Template, Specialty, Hospital, Location
+from common.models import Base, Template, Specialty, Hospital, Location, User, Admin
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -27,6 +28,31 @@ def test_db():
     Base.metadata.create_all(bind=engine)
 
     db = TestingSessionLocal()
+
+    first_admin = User(
+        user_role="admin",
+        document_type="national_id",
+        name="test",
+        last_name="test",
+        email="test@gmail.com",
+        document_number="12345654321",
+        date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+    )
+
+    second_admin = User(
+        user_role="admin",
+        document_type="national_id",
+        name="test",
+        last_name="test",
+        email="test2@gmail.com",
+        document_number="12345654321",
+        date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+    )
+
+    admins = [
+        Admin(user=first_admin, hospital_id=1),
+        Admin(user=second_admin, hospital_id=1),
+    ]
 
     templates = [
         Template(
@@ -81,6 +107,7 @@ def test_db():
 
     db.add(location)
     db.add_all(hospitals)
+    db.add_all(admins)
     db.add_all(specialties)
     db.add_all(templates)
     db.commit()
