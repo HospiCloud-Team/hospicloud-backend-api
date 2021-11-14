@@ -81,8 +81,8 @@ def test_db():
     )
 
     specialties = [
-        Specialty(name="pediatrician"),
-        Specialty(name="general")
+        Specialty(name="pediatrician", hospital_id=1),
+        Specialty(name="general", hospital_id=1)
     ]
 
     db.add(patient_user)
