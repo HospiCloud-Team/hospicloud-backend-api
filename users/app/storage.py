@@ -2,6 +2,7 @@ import bcrypt
 import datetime
 import traceback
 from typing import List
+from firebase_admin import initialize_app
 from firebase_admin.auth import UserInfo, create_user, set_custom_user_claims
 
 from dependencies import Session
@@ -15,10 +16,12 @@ ALLOWED_PATIENT_UPDATES = ["medical_background"]
 
 ALLOWED_DOCTOR_UPDATES = ["schedule_id", "specialty_ids"]
 
+firebase_app = initialize_app()
+
 
 def create_patient(db: Session, user: UserIn) -> User:
-    random_password = generate_password().encode("utf-8")
-    hashed_password = bcrypt.hashpw(random_password, bcrypt.gensalt())
+    random_password = generate_password()
+    hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
 
     try:
         db_user = User(**user.dict(exclude={"patient"}), password=hashed_password)
@@ -27,18 +30,19 @@ def create_patient(db: Session, user: UserIn) -> User:
         db.add(db_user)
         db.add(db_patient)
 
-        db.commit()
-        db.refresh(db_user)
-
         firebase_patient: UserInfo = create_user(
             email=user.email,
             password=random_password,
-            displayName=f"{user.name} {user.last_name}",
+            display_name=f"{user.name} {user.last_name}",
         )
 
         set_custom_user_claims(
-            firebase_patient.uid, {"id": db_user.id, "role": UserRole.patient}
+            firebase_patient.uid,
+            {"id": db_user.id, "role": UserRole.patient, "hospital_id": None},
         )
+
+        db.commit()
+        db.refresh(db_user)
 
         return db_user
     except Exception as e:
@@ -48,8 +52,8 @@ def create_patient(db: Session, user: UserIn) -> User:
 
 
 def create_admin(db: Session, user: UserIn) -> User:
-    random_password = generate_password().encode("utf-8")
-    hashed_password = bcrypt.hashpw(random_password, bcrypt.gensalt())
+    random_password = generate_password()
+    hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
 
     try:
         db_user = User(**user.dict(exclude={"admin"}), password=hashed_password)
@@ -58,18 +62,23 @@ def create_admin(db: Session, user: UserIn) -> User:
         db.add(db_user)
         db.add(db_admin)
 
-        db.commit()
-        db.refresh(db_user)
-
         firebase_admin: UserInfo = create_user(
             email=user.email,
             password=random_password,
-            displayName=f"{user.name} {user.last_name}",
+            display_name=f"{user.name} {user.last_name}",
         )
 
         set_custom_user_claims(
-            firebase_admin.uid, {"id": db_user.id, "role": UserRole.admin}
+            firebase_admin.uid,
+            {
+                "id": db_user.id,
+                "role": UserRole.admin,
+                "hospital_id": db_user.admin.hospital_id,
+            },
         )
+
+        db.commit()
+        db.refresh(db_user)
 
         return db_user
     except Exception as e:
@@ -79,8 +88,8 @@ def create_admin(db: Session, user: UserIn) -> User:
 
 
 def create_doctor(db: Session, user: UserIn) -> User:
-    random_password = generate_password().encode("utf-8")
-    hashed_password = bcrypt.hashpw(random_password, bcrypt.gensalt())
+    random_password = generate_password()
+    hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
 
     try:
         db_user = User(**user.dict(exclude={"doctor"}), password=hashed_password)
@@ -97,18 +106,23 @@ def create_doctor(db: Session, user: UserIn) -> User:
         db.add(db_user)
         db.add(db_doctor)
 
-        db.commit()
-        db.refresh(db_doctor)
-
         firebase_doctor: UserInfo = create_user(
             email=user.email,
             password=random_password,
-            displayName=f"{user.name} {user.last_name}",
+            display_name=f"{user.name} {user.last_name}",
         )
 
         set_custom_user_claims(
-            firebase_doctor.uid, {"id": db_user.id, "role": UserRole.doctor}
+            firebase_doctor.uid,
+            {
+                "id": db_user.id,
+                "role": UserRole.doctor,
+                "hospital_id": db_user.doctor.hospital_id,
+            },
         )
+
+        db.commit()
+        db.refresh(db_doctor)
 
         return db_user
     except Exception as e:
