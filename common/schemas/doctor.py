@@ -1,21 +1,26 @@
-from enum import Enum
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
-from common.models import BloodType
+
 from .specialty import Specialty
 
 
 class DoctorBase(BaseModel):
-    pass
+    hospital_id: int
+    schedule: str
 
 
 class DoctorIn(DoctorBase):
-    id_specialty: int
+    specialty_ids: List[int] = []
+
+
+class DoctorUpdate(BaseModel):
+    schedule: Optional[str] = None
+    specialty_ids: Optional[List[int]] = None
 
 
 class Doctor(DoctorBase):
     id: int
-    specialty = Specialty
+    specialties: List[Specialty]
 
     class Config:
         orm_mode = True

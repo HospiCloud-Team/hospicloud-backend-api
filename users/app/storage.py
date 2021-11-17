@@ -2,19 +2,21 @@ import bcrypt
 import datetime
 import traceback
 from typing import List
+
 from firebase_admin import initialize_app
 from firebase_admin.auth import UserInfo, create_user, set_custom_user_claims
 
 from dependencies import Session
-from schemas.user import User, UserIn, UserRole
+from common.schemas.user import User, UserIn, UserRole, UserUpdate
 from common.models import Base, Patient, User, Admin, Doctor, Specialty
 from utils import generate_password
+from common.utils import get_current_time
 
 ALLOWED_USER_UPDATES = ["name", "last_name", "date_of_birth", "document_number"]
 
 ALLOWED_PATIENT_UPDATES = ["medical_background"]
 
-ALLOWED_DOCTOR_UPDATES = ["schedule_id", "specialty_ids"]
+ALLOWED_DOCTOR_UPDATES = ["schedule", "specialty_ids"]
 
 firebase_app = initialize_app()
 
@@ -25,6 +27,7 @@ def create_patient(db: Session, user: UserIn) -> User:
 
     try:
         db_user = User(**user.dict(exclude={"patient"}), password=hashed_password)
+        db_user.created_at = get_current_time()
         db_patient = Patient(**user.patient.dict(), user=db_user)
 
         db.add(db_user)
@@ -57,6 +60,8 @@ def create_admin(db: Session, user: UserIn) -> User:
 
     try:
         db_user = User(**user.dict(exclude={"admin"}), password=hashed_password)
+        db_user.created_at = get_current_time()
+
         db_admin = Admin(**user.admin.dict(), user=db_user)
 
         db.add(db_user)
@@ -93,6 +98,7 @@ def create_doctor(db: Session, user: UserIn) -> User:
 
     try:
         db_user = User(**user.dict(exclude={"doctor"}), password=hashed_password)
+        db_user.created_at = get_current_time()
         db_doctor = Doctor(**user.doctor.dict(exclude={"specialty_ids"}), user=db_user)
 
         specialties = (
@@ -166,7 +172,7 @@ def delete_user(db: Session, user_id: int) -> User:
     return user
 
 
-def update_user(db: Session, user_id: int, updated_user: User) -> User:
+def update_user(db: Session, user_id: int, updated_user: UserUpdate) -> User:
     user = get_user(db, user_id)
     if not user:
         return None
@@ -188,7 +194,7 @@ def update_user(db: Session, user_id: int, updated_user: User) -> User:
                 if do_key_and_value_exist(key, value) and key in ALLOWED_DOCTOR_UPDATES:
                     setattr(user.doctor, key, value)
 
-        user.updated_at = datetime.datetime.now()
+        user.updated_at = get_current_time()
 
         db.commit()
         db.refresh(user)
@@ -202,3 +208,7 @@ def update_user(db: Session, user_id: int, updated_user: User) -> User:
 
 def do_key_and_value_exist(key, value) -> bool:
     return key is not None and value is not None
+
+
+def get_doctors_by_hospital_id(db: Session, hospital_id: int) -> List[User]:
+    return db.query(User).join(Doctor).filter(Doctor.hospital_id == hospital_id).all()

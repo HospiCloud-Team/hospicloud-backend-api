@@ -1,11 +1,10 @@
 import datetime
+from typing import List
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pytest
-
-
 from common.database import start_engine
-from common.models import Base, Hospital, User, Patient, Specialty, Schedule
+from common.models import Base, Hospital, User, Patient, Specialty, Doctor
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -38,28 +37,60 @@ def test_db():
         email="test@gmail.com",
         document_number="12345654321",
         date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+        created_at=datetime.datetime.now(datetime.timezone.utc)
     )
 
     patient = Patient(user=patient_user, blood_type="a_plus")
 
-    hospital = Hospital(name="Mock hospital")
-
-    specialties = [
-        Specialty(name="pediatrician"),
-        Specialty(name="general")
+    doctor_users: List[User] = [
+        User(
+            user_role="doctor",
+            document_type="national_id",
+            name="Alejandro",
+            last_name="Smith",
+            email="test.doctor@gmail.com",
+            document_number="12345654321",
+            date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+        ),
+        User(
+            user_role="doctor",
+            document_type="national_id",
+            name="Alejandro",
+            last_name="Smith",
+            email="test.doctor2@gmail.com",
+            document_number="12345654321",
+            date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+        ),
     ]
 
-    schedule = Schedule(
-        start_day="monday",
-        end_day="friday",
-        all_day=True
+    doctors = [
+        Doctor(
+            user_id=2,
+            hospital_id=1,
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+        ),
+        Doctor(
+            user_id=3,
+            hospital_id=1,
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+        )
+    ]
+
+    hospital = Hospital(
+        name="Mock hospital", description="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     )
+
+    specialties = [
+        Specialty(name="pediatrician", hospital_id=1),
+        Specialty(name="general", hospital_id=1)
+    ]
 
     db.add(patient_user)
     db.add(patient)
     db.add(hospital)
     db.bulk_save_objects(specialties)
-    db.add(schedule)
+    db.add_all(doctor_users)
+    db.add_all(doctors)
     db.commit()
 
     yield

@@ -38,7 +38,7 @@ class Checkup(Base):
     doctor_id = Column(Integer, ForeignKey("doctor.id"))
     patient_id = Column(Integer, ForeignKey("patient.id"))
     data = Column(JSON)
-    date = Column(DateTime, default=datetime.datetime.now())
+    date = Column(DateTime(timezone=True))
     patient = relationship(
         "Patient", back_populates="checkups", lazy="joined", join_depth=2)
     doctor = relationship(
@@ -84,10 +84,11 @@ class Hospital(Base):
     __tablename__ = "hospital"
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    description = Column(String)
     schedule = Column(String(250))
     location_id = Column(Integer, ForeignKey("location.id"))
-    created_at = Column(DateTime, default=datetime.datetime.now())
-    updated_at = Column(DateTime)
+    created_at = Column(DateTime(timezone=True))
+    updated_at = Column(DateTime(timezone=True))
 
     location = relationship(
         "Location",
@@ -103,7 +104,6 @@ class Doctor(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     hospital_id = Column(Integer, ForeignKey("hospital.id"))
     schedule = Column(String(250))
-    schedule_id = Column(Integer, ForeignKey("schedule.id"))
 
     specialties = relationship(
         "Specialty",
@@ -160,18 +160,8 @@ class Template(Base):
     numeric_fields = Column(Integer)
     alphanumeric_fields = Column(Integer)
     file_upload_fields = Column(Integer)
-    created_at = Column(DateTime, default=datetime.datetime.now())
-    updated_at = Column(DateTime)
-
-
-class Schedule(Base):
-    __tablename__ = "schedule"
-    id = Column(Integer, primary_key=True)
-    start_day = Column(String)
-    end_day = Column(String)
-    start_time = Column(Time)
-    end_time = Column(Time)
-    all_day = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True))
+    updated_at = Column(DateTime(timezone=True))
 
 
 class UserRole(str, enum.Enum):
@@ -213,8 +203,8 @@ class User(Base):
     email = Column(String, unique=True)
     document_number = Column(String(11))
     date_of_birth = Column(Date)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(DateTime(timezone=True))
+    updated_at = Column(DateTime(timezone=True))
 
     patient = relationship("Patient", back_populates="user", uselist=False)
     doctor = relationship("Doctor", back_populates="user", uselist=False)
@@ -227,7 +217,7 @@ SessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine)
 
 
-@compiles(DropTable, "postgresql")
+@ compiles(DropTable, "postgresql")
 def _compile_drop_table(element, compiler, **kwargs):
     return compiler.visit_drop_table(element) + " CASCADE"
 

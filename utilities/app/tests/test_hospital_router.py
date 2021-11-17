@@ -1,6 +1,5 @@
 from fastapi.testclient import TestClient
 from fastapi import status
-
 from main import app
 from dependencies import get_db
 from tests.test_db import override_get_db, test_db
@@ -14,6 +13,7 @@ def test_create_hospital(test_db):
     payload = {
         "name": "Public hospital",
         "schedule": "L, X, V 8:00 - 12:00, 4:00 - 6:00",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
         "location": {
             "address": "Av. Abraham Lincoln 2, Santo Domingo 10101",
             "province": "santo_domingo"
@@ -21,7 +21,6 @@ def test_create_hospital(test_db):
     }
 
     response = client.post("/hospitals", json=payload)
-    data = response.json()
 
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -91,13 +90,42 @@ def test_update_certain_hospital_fields(test_db):
     assert response.status_code == status.HTTP_200_OK
     assert data["name"] == "Updated hospital name"
     assert data["location"]["province"] == "samana"
+    assert data["updated_at"] is not None
 
 
-def delete_hospital(test_db):
+def test_delete_hospital(test_db):
     response = client.delete("/hospitals/1")
 
     assert response.status_code == status.HTTP_200_OK
 
     response = client.get("/hospitals/1")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_get_admins_by_hospital_id(test_db):
+    response = client.get("/hospitals/1/admins")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 2
+
+
+def test_get_admins_hospital_not_found(test_db):
+    response = client.get("/hospitals/123/admins")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_get_doctors_by_hospital_id(test_db):
+    response = client.get("/hospitals/1/doctors")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 2
+
+
+def test_get_doctors_hospital_not_found(test_db):
+    response = client.get("/hospitals/123/doctors")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND

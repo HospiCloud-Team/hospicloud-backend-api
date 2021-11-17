@@ -1,7 +1,5 @@
 from fastapi.testclient import TestClient
 from fastapi import status
-from starlette.status import HTTP_200_OK
-
 from main import app
 from dependencies import get_db
 from tests.test_db import override_get_db, test_db
@@ -40,15 +38,19 @@ def test_create_doctor(test_db):
         "document_number": "11111111111",
         "date_of_birth": "2000-06-27",
         "doctor": {
+            "schedule": "L, X, V 8:00 - 12:00, 4:00 - 6:00",
             "hospital_id": 1,
-            "schedule_id": 1,
             "specialty_ids": [1, 2]
         }
     }
 
     response = client.post("/users", json=payload)
-    
+    data: dict = response.json()
+
     assert response.status_code == status.HTTP_201_CREATED
+    assert data["doctor"] is not None
+    assert data["doctor"]["specialties"] is not None
+    assert len(data["doctor"]["specialties"]) == 2
 
 
 def test_create_admin(test_db):
@@ -139,3 +141,11 @@ def test_update_user(test_db):
     assert data["document_number"] == "12345654399"
     assert data["patient"]["medical_background"] == "This is an update!"
     assert data["updated_at"] is not None
+
+
+def test_get_doctors_by_hospital_id(test_db):
+    response = client.get("/users/doctors?hospital_id=1")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 2

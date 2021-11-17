@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from common.schemas.hospital import Hospital, HospitalIn, HospitalUpdate
+from common.schemas.user import User
 from dependencies import get_db, Session
 from storage import hospital as hospitals
 
@@ -78,7 +79,7 @@ async def update_hospital(hospital_id: int, updated_hospital: HospitalUpdate, db
                 status_code=status.HTTP_404_NOT_FOUND,
                 content={"message": "Hospital not found"}
             )
-        
+
         return db_hospital
     except Exception:
         return JSONResponse(
@@ -107,4 +108,38 @@ async def delete_hospital(hospital_id: int, db: Session = Depends(get_db)):
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal server error, try again later"}
+        )
+
+
+@router.get(
+    "/hospitals/{hospital_id}/admins",
+    response_model=List[User],
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["hospitals"]
+)
+async def get_admins_by_hospital_id(hospital_id: int, db: Session = Depends(get_db)):
+    try:
+        return hospitals.get_admins(db, hospital_id)
+    except ValueError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Hospital doesn't exist"}
+        )
+
+
+@router.get(
+    "/hospitals/{hospital_id}/doctors",
+    response_model=List[User],
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["hospitals"]
+)
+async def get_doctors_by_hospital_id(hospital_id: int, db: Session = Depends(get_db)):
+    try:
+        return hospitals.get_doctors(db, hospital_id)
+    except ValueError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Hospital doesn't exist"}
         )

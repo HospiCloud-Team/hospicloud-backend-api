@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pytest
+import datetime
 
 from common.database import start_engine
-from common.models import Base, Template, Specialty, Hospital, Location
+from common.models import Base, Template, Specialty, Hospital, Location, User, Admin, Doctor
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -27,6 +28,31 @@ def test_db():
     Base.metadata.create_all(bind=engine)
 
     db = TestingSessionLocal()
+
+    first_admin = User(
+        user_role="admin",
+        document_type="national_id",
+        name="test",
+        last_name="test",
+        email="test@gmail.com",
+        document_number="12345654321",
+        date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+    )
+
+    second_admin = User(
+        user_role="admin",
+        document_type="national_id",
+        name="test",
+        last_name="test",
+        email="test2@gmail.com",
+        document_number="12345654321",
+        date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+    )
+
+    admins = [
+        Admin(user=first_admin, hospital_id=1),
+        Admin(user=second_admin, hospital_id=1),
+    ]
 
     templates = [
         Template(
@@ -56,18 +82,21 @@ def test_db():
         Hospital(
             name="Mock hospital",
             location=location,
+            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             location_id=1,
             schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
         ),
         Hospital(
             name="Private hospital",
             location=location,
+            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             location_id=1,
             schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
         ),
         Hospital(
             name="Prius hospital",
             location=location,
+            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             location_id=1,
             schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
         )
@@ -79,10 +108,47 @@ def test_db():
         Specialty(name="mortician", hospital_id=2)
     ]
 
+    doctor_users = [
+        User(
+            user_role="doctor",
+            document_type="national_id",
+            name="Alejandro",
+            last_name="Smith",
+            email="test.doctor@gmail.com",
+            document_number="12345654321",
+            date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+        ),
+        User(
+            user_role="doctor",
+            document_type="national_id",
+            name="Alejandro",
+            last_name="Smith",
+            email="test.doctor2@gmail.com",
+            document_number="12345654321",
+            date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
+        ),
+    ]
+
+    doctors = [
+        Doctor(
+            user_id=2,
+            hospital_id=1,
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+        ),
+        Doctor(
+            user_id=3,
+            hospital_id=1,
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+        )
+    ]
+
     db.add(location)
     db.add_all(hospitals)
+    db.add_all(admins)
     db.add_all(specialties)
     db.add_all(templates)
+    db.add_all(doctor_users)
+    db.add_all(doctors)
     db.commit()
 
     yield
