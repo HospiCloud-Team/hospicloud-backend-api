@@ -29,16 +29,18 @@ services:
         build: 
             context: ./
             dockerfile: users/Dockerfile
+        volumes:
+          - ${CREDENTIALS_PATH}:/credentials.json
         environment:
             - PORT=8082
+            - GOOGLE_APPLICATION_CREDENTIALS=/credentials.json
+            - PROJECT_ID=${PROJECT_ID}
         ports:
             - 8082:8082
     postgres-db:
         container_name: postgres-db
         image: postgres:latest
         restart: always
-        ports:
-            - 5432:5432
         environment:
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=password
