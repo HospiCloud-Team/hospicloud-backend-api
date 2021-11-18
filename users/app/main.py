@@ -1,17 +1,16 @@
 import traceback
+import os
 from typing import List, Optional
 from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import firebase
+from fastapi_cloudauth.firebase import FirebaseCurrentUser, FirebaseClaims
 
 import storage
 from common.schemas.user import UserIn, User, UserRole, UserUpdate, DoctorOut
-from schemas.auth import LogIn, TokenResponse
 from dependencies import get_db, Session
 
 app = FastAPI(title="Users", description="Users service for HospiCloud app.")
-auth = firebase.Auth()
 
 origins = ["*"]
 
@@ -22,6 +21,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+get_current_user = FirebaseCurrentUser(project_id=os.getenv("PROJECT_ID"))
 
 
 @app.get("/")
@@ -39,21 +40,45 @@ async def home():
     response_model_exclude_none=True,
     tags=["users"],
 )
-async def create_user(user: UserIn, db: Session = Depends(get_db)):
+async def create_user(
+    user: UserIn,
+    db: Session = Depends(get_db),
+    current_user: FirebaseClaims = Depends(get_current_user),
+):
     try:
+        current_user = current_user.dict()
         existing_user = storage.get_user_by_email(db, user.email)
         if existing_user:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"message": "Email is already used"},
             )
-
-        if user.user_role == UserRole.patient:
+        if current_user["role"] == UserRole.admin and user.user_role in [
+            UserRole.admin,
+            UserRole.doctor,
+        ]:
+            if (
+                user.user_role == UserRole.doctor
+                and user.doctor.hospital_id == current_user["hospital_id"]
+            ):
+                return storage.create_doctor(db, user)
+            elif (
+                user.user_role == UserRole.admin
+                and user.doctor.hospital_id == current_user["hospital_id"]
+            ):
+                return storage.create_admin(db, user)
+            else:
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "User can't add to this hospital."},
+                )
+        elif user.user_role == UserRole.patient:
             return storage.create_patient(db, user)
-        elif user.user_role == UserRole.admin:
-            return storage.create_admin(db, user)
         else:
-            return storage.create_doctor(db, user)
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"message": "User is not an admin."},
+            )
 
     except Exception:
         print(traceback.format_exc())
@@ -69,7 +94,7 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
     response_model=List[User],
     status_code=status.HTTP_200_OK,
     response_model_exclude_none=True,
-    tags=["users"]
+    tags=["users"],
 )
 async def get_doctors_by_hospital_id(hospital_id: int, db: Session = Depends(get_db)):
     return storage.get_doctors_by_hospital_id(db, hospital_id)
@@ -83,14 +108,12 @@ async def get_doctors_by_hospital_id(hospital_id: int, db: Session = Depends(get
     tags=["users"],
 )
 async def get_users(
-    db: Session = Depends(get_db), user_role: Optional[UserRole] = None
+    db: Session = Depends(get_db),
+    user_role: Optional[UserRole] = None,
+    current_user: FirebaseClaims = Depends(get_current_user),
 ):
+    current_user = current_user.dict()
     return storage.get_users(db, user_role)
-
-
-@app.post("/users/login", tags=["users"], response_model=TokenResponse)
-async def login(credentials: LogIn):
-    pass
 
 
 @app.get(
@@ -100,7 +123,11 @@ async def login(credentials: LogIn):
     response_model_exclude_none=True,
     tags=["users"],
 )
-async def get_user(user_id: int, db: Session = Depends(get_db)):
+async def get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: FirebaseClaims = Depends(get_current_user),
+):
     db_user = storage.get_user(db, user_id)
     if db_user is None:
         return JSONResponse(
@@ -117,7 +144,12 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
     response_model_exclude_none=True,
     tags=["users"],
 )
-async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
+async def update_user(
+    user_id: int,
+    user: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: FirebaseClaims = Depends(get_current_user),
+):
     try:
         db_user = storage.update_user(db, user_id, user)
         if db_user is None:
@@ -141,7 +173,11 @@ async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_
     response_model_exclude_none=True,
     tags=["users"],
 )
-async def delete_user(user_id: int, db: Session = Depends(get_db)):
+async def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: FirebaseClaims = Depends(get_current_user),
+):
     try:
         db_user = storage.delete_user(db, user_id)
         if db_user is None:
