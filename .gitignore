@@ -145,6 +145,8 @@ cython_debug/
 
 .DS_Store
 
+hospicloud*.json
+
 # End of https://www.toptal.com/developers/gitignore/api/python
 
 test.db

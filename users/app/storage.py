@@ -78,7 +78,6 @@ def create_admin(db: Session, user: UserIn) -> User:
             {
                 "id": db_user.id,
                 "role": UserRole.admin,
-                "hospital_id": db_user.admin.hospital_id,
             },
         )
 
@@ -123,7 +122,6 @@ def create_doctor(db: Session, user: UserIn) -> User:
             {
                 "id": db_user.id,
                 "role": UserRole.doctor,
-                "hospital_id": db_user.doctor.hospital_id,
             },
         )
 
@@ -141,11 +139,18 @@ def get_user(db: Session, user_id: int) -> User:
     return db.query(User).filter(User.id == user_id).first()
 
 
-def get_users(db: Session, user_role: UserRole) -> List[User]:
-    if user_role:
+def get_users(db: Session, user_role: UserRole = None, hospital_id: int = None) -> List[User]:
+    if user_role and hospital_id:
+        if user_role.value == UserRole.admin:
+            return db.query(User).join(Admin).filter(User.user_role == user_role.value, Admin.hospital_id == hospital_id).all()
+        elif user_role.value == UserRole.doctor:
+            return db.query(User).join(Doctor).filter(User.user_role == user_role.value, Doctor.hospital_id == hospital_id).all()
+    elif hospital_id:
+        return db.query(User).join(Doctor).join(Admin).filter(Doctor.hospital_id == hospital_id or Admin.hospital_id == hospital_id).all()
+    elif user_role:
         return db.query(User).filter(User.user_role == user_role.value).all()
-
-    return db.query(User).all()
+    else:
+        return db.query(User).all()
 
 
 def get_user_by_email(db: Session, email: str) -> User:

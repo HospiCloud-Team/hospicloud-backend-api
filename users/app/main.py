@@ -8,6 +8,7 @@ from fastapi_cloudauth.firebase import FirebaseCurrentUser, FirebaseClaims
 
 import storage
 from common.schemas.user import UserIn, User, UserRole, UserUpdate, DoctorOut
+from .tests.test_class import TokenBearer
 from dependencies import get_db, Session
 
 app = FastAPI(title="Users", description="Users service for HospiCloud app.")
@@ -22,7 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-get_current_user = FirebaseCurrentUser(project_id=os.getenv("PROJECT_ID"))
+if os.getenv("ENVIRONMENT") == "TEST":
+    get_current_user = TokenBearer()
+else:
+    get_current_user = FirebaseCurrentUser(project_id=os.getenv("PROJECT_ID"))
 
 
 @app.get("/")
@@ -31,6 +35,42 @@ async def home():
         status_code=status.HTTP_200_OK,
         content={"container": "users", "message": "Hello World!"},
     )
+
+
+@app.post(
+    "/register",
+    response_model=User,
+    status_code=status.HTTP_201_CREATED,
+    response_model_exclude_none=True,
+    tags=["users"],
+)
+async def register(
+    user: UserIn,
+    db: Session = Depends(get_db),
+):
+    try:
+        existing_user = storage.get_user_by_email(db, user.email)
+        if existing_user:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Email is already used"},
+            )
+        if user.user_role == UserRole.admin:
+            return storage.create_admin(db, user)
+        elif user.user_role == UserRole.patient:
+            return storage.create_patient(db, user)
+        else:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Can only register admin or patient."},
+            )
+    except Exception:
+        print(traceback.format_exc())
+
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal server error, try again later"},
+        )
 
 
 @app.post(
@@ -46,7 +86,7 @@ async def create_user(
     current_user: FirebaseClaims = Depends(get_current_user),
 ):
     try:
-        current_user = current_user.dict()
+        current_user: User = storage.get_user_by_email(current_user.email)
         existing_user = storage.get_user_by_email(db, user.email)
         if existing_user:
             return JSONResponse(
@@ -59,12 +99,12 @@ async def create_user(
         ]:
             if (
                 user.user_role == UserRole.doctor
-                and user.doctor.hospital_id == current_user["hospital_id"]
+                and user.doctor.hospital_id == current_user.doctor.hospital_id
             ):
                 return storage.create_doctor(db, user)
             elif (
                 user.user_role == UserRole.admin
-                and user.doctor.hospital_id == current_user["hospital_id"]
+                and user.doctor.hospital_id == current_user.admin.hospital_id
             ):
                 return storage.create_admin(db, user)
             else:
@@ -72,8 +112,6 @@ async def create_user(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     content={"message": "User can't add to this hospital."},
                 )
-        elif user.user_role == UserRole.patient:
-            return storage.create_patient(db, user)
         else:
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -96,7 +134,11 @@ async def create_user(
     response_model_exclude_none=True,
     tags=["users"],
 )
-async def get_doctors_by_hospital_id(hospital_id: int, db: Session = Depends(get_db)):
+async def get_doctors_by_hospital_id(
+    hospital_id: int,
+    db: Session = Depends(get_db),
+    current_user: FirebaseClaims = Depends(get_current_user),
+):
     return storage.get_doctors_by_hospital_id(db, hospital_id)
 
 
@@ -112,8 +154,18 @@ async def get_users(
     user_role: Optional[UserRole] = None,
     current_user: FirebaseClaims = Depends(get_current_user),
 ):
-    current_user = current_user.dict()
-    return storage.get_users(db, user_role)
+    current_user: User = storage.get_user_by_email(db, current_user.email)
+    current_hospital_id = getattr(current_user, current_user.user_role).hospital_id
+    if current_user.user_role == UserRole.admin:
+        if user_role and user_role.value != UserRole.patient:
+            return storage.get_users(db, user_role, current_hospital_id)
+        else:
+            return storage.get_users(db, hospital_id=current_hospital_id)
+    else:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "User is not an admin."},
+        )
 
 
 @app.get(
@@ -178,15 +230,30 @@ async def delete_user(
     db: Session = Depends(get_db),
     current_user: FirebaseClaims = Depends(get_current_user),
 ):
-    try:
-        db_user = storage.delete_user(db, user_id)
-        if db_user is None:
-            return JSONResponse(
-                status_code=status.HTTP_404_NOT_FOUND,
-                content={"message": "User not found"},
-            )
+    current_user: User = storage.get_user_by_email(current_user.email)
+    user = storage.get_user(db, user_id)
+    current_hospital_id, user_hospital_id = None
 
-        return db_user
+    if current_user.user_role != UserRole.patient:
+        current_hospital_id = getattr(current_user, current_user.user_role).hospital_id
+
+    if user.user_role != UserRole.patient:
+        user_hospital_id = getattr(current_user, current_user.user_role).hospital_id
+
+    try:
+        if (
+            current_user.user_role == UserRole.admin
+            and current_hospital_id == user_hospital_id
+        ) or (
+            current_user.user_role == UserRole.patient and current_user.id == user.id
+        ):
+            db_user = storage.delete_user(db, user_id)
+            if db_user is None:
+                return JSONResponse(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    content={"message": "User not found"},
+                )
+            return db_user
     except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
