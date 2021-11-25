@@ -82,3 +82,11 @@ def test_delete_template(test_db):
     response = client.get("/templates/1")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_get_templates_by_doctor_id(test_db):
+    response = client.get("/templates/doctors/1")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 1
