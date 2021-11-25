@@ -10,12 +10,12 @@ class DoctorBase(BaseModel):
 
 
 class DoctorIn(DoctorBase):
-    specialty_ids: List[int] = []
+    specialties: List[int] = []
 
 
 class DoctorUpdate(BaseModel):
     schedule: Optional[str] = None
-    specialty_ids: Optional[List[int]] = None
+    specialties: Optional[List[int]] = None
 
 
 class Doctor(DoctorBase):
