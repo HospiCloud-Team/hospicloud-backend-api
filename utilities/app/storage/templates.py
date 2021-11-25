@@ -1,7 +1,9 @@
 import json
 import traceback
+from typing import List
 
-from sqlalchemy.sql.elements import and_
+from sqlalchemy.sql import text
+from sqlalchemy import and_
 
 from common.schemas.template import Template, TemplateIn, TemplateUpdate
 from common.models import Template
@@ -101,6 +103,27 @@ def delete_template(db: Session, template_id: int) -> Template:
         raise Exception(f'Unexpected error: {e}')
 
     return template
+
+
+def get_templates_by_doctor_id(db: Session, doctor_id: int) -> List[Template]:
+    statement = text("""
+        SELECT
+            t.*
+        FROM
+            doctor as d
+        INNER JOIN doctor_specialty as ds
+            ON d.id = ds.doctor_id
+        INNER JOIN specialty as s
+            ON s.id = ds.specialty_id
+        INNER JOIN template as t
+            ON t.specialty_id = s.id
+        WHERE
+            d.id = :doctor_id;
+    """)
+
+    parameters = {"doctor_id": doctor_id}
+
+    return db.execute(statement, params=parameters).all()
 
 
 def calculate_template_fields(template: TemplateIn):
