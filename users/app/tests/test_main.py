@@ -40,7 +40,7 @@ def test_create_doctor(test_db):
         "doctor": {
             "schedule": "L, X, V 8:00 - 12:00, 4:00 - 6:00",
             "hospital_id": 1,
-            "specialty_ids": [1, 2]
+            "specialties": [1, 2]
         }
     }
 

@@ -66,7 +66,7 @@ def test_db():
         Template(
             title="Mock template",
             headers="{\"name\":\"string\",\"last_name\":\"string\",\"condition\":\"string\",\"age\":\"int\"}",
-            specialty_id=2,
+            specialty_id=1,
             hospital_id=2,
             numeric_fields=1,
             alphanumeric_fields=3
@@ -138,9 +138,11 @@ def test_db():
         Doctor(
             user_id=3,
             hospital_id=1,
-            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"
+            schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00",
         )
     ]
+
+    doctors[0].specialties.append(specialties[0])
 
     db.add(location)
     db.add_all(hospitals)

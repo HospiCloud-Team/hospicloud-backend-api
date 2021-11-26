@@ -13,7 +13,7 @@ ALLOWED_USER_UPDATES = ["name", "last_name",
 
 ALLOWED_PATIENT_UPDATES = ["medical_background"]
 
-ALLOWED_DOCTOR_UPDATES = ["schedule", "specialty_ids"]
+ALLOWED_DOCTOR_UPDATES = ["schedule", "specialties"]
 
 
 def create_patient(db: Session, user: UserIn) -> User:
@@ -80,10 +80,10 @@ def create_doctor(db: Session, user: UserIn) -> User:
         db_user.created_at = get_current_time()
 
         db_doctor = Doctor(
-            **user.doctor.dict(exclude={"specialty_ids"}), user=db_user)
+            **user.doctor.dict(exclude={"specialties"}), user=db_user)
 
         specialties = db.query(Specialty).filter(
-            Specialty.id.in_(user.doctor.specialty_ids)).all()
+            Specialty.id.in_(user.doctor.specialties)).all()
 
         db_doctor.specialties = specialties
 
