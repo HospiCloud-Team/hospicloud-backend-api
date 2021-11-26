@@ -4,12 +4,11 @@ from typing import List, Optional
 from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_cloudauth.firebase import FirebaseCurrentUser, FirebaseClaims
+from fastapi_cloudauth.firebase import FirebaseClaims
 
 import storage
 from common.schemas.user import UserIn, User, UserRole, UserUpdate, DoctorOut
-from .tests.test_class import TokenBearer
-from dependencies import get_db, Session
+from dependencies import Session, get_db, get_current_user
 
 app = FastAPI(title="Users", description="Users service for HospiCloud app.")
 
@@ -22,11 +21,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-if os.getenv("ENVIRONMENT") == "TEST":
-    get_current_user = TokenBearer()
-else:
-    get_current_user = FirebaseCurrentUser(project_id=os.getenv("PROJECT_ID"))
 
 
 @app.get("/")
