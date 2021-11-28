@@ -1,5 +1,4 @@
 import bcrypt
-import datetime
 import traceback
 from typing import List
 from dependencies import Session
@@ -145,13 +144,20 @@ def update_user(db: Session, user_id: int, updated_user: UserUpdate) -> User:
             if do_key_and_value_exist(key, value) and key in ALLOWED_USER_UPDATES:
                 setattr(user, key, value)
 
-        if updated_user.patient is not None:
+        is_patient_user = updated_user.patient is not None and user.user_role == UserRole.patient
+        is_doctor_user = updated_user.doctor is not None and user.user_role == UserRole.doctor
+
+        if is_patient_user:
             for key, value in dict(updated_user.patient).items():
                 if do_key_and_value_exist(key, value) and key in ALLOWED_PATIENT_UPDATES:
                     setattr(user.patient, key, value)
-        elif updated_user.doctor is not None:
+        elif is_doctor_user:
             for key, value in dict(updated_user.doctor).items():
                 if do_key_and_value_exist(key, value) and key in ALLOWED_DOCTOR_UPDATES:
+                    if key == "specialties":
+                        value = db.query(Specialty).filter(
+                            Specialty.id.in_(updated_user.doctor.specialties)).all()
+
                     setattr(user.doctor, key, value)
 
         user.updated_at = get_current_time()
