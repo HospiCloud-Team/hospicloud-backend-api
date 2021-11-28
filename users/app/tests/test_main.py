@@ -122,7 +122,7 @@ def test_delete_user(test_db):
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_update_user(test_db):
+def test_update_patient(test_db):
     payload = {
         "name": "new name",
         "last_name": "new last name",
@@ -140,6 +140,29 @@ def test_update_user(test_db):
     assert data["last_name"] == "new last name"
     assert data["document_number"] == "12345654399"
     assert data["patient"]["medical_background"] == "This is an update!"
+    assert data["updated_at"] is not None
+
+
+def test_update_doctor(test_db):
+    payload = {
+        "name": "new name",
+        "last_name": "new last name",
+        "doctor": {
+            "schedule": "new schedule",
+            "specialties": [1]
+        }
+    }
+
+    response = client.put("/users/2", json=payload)
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert data["name"] == "new name"
+    assert data["last_name"] == "new last name"
+    assert data["doctor"]["schedule"] == "new schedule"
+    assert len(data["doctor"]["specialties"]) == 1
+    assert data["doctor"]["specialties"][0]["id"] == 1
+    assert data["doctor"]["specialties"][0]["name"] == "pediatrician"
     assert data["updated_at"] is not None
 
 
