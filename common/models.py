@@ -195,6 +195,7 @@ class Patient(Base):
 class User(Base):
     __tablename__ = "user"
     id = Column(Integer, primary_key=True)
+    uid = Column(String)
     user_role = Column(Enum(UserRole))
     document_type = Column(Enum(DocumentType))
     name = Column(String(length=50))
