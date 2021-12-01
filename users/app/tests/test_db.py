@@ -6,6 +6,8 @@ from sqlalchemy.orm import sessionmaker
 import pytest
 from common.database import start_engine
 from common.models import Base, Hospital, User, Patient, Specialty, Doctor, Admin
+from common.schemas.auth import FirebaseUser
+from common.schemas.user import UserRole
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -30,11 +32,12 @@ def override_get_db():
 
 
 def override_get_current_user():
-    try:
-        current_user = CurrentUser(email="test.admin@gmail.com", uid="1")
-        yield current_user
-    finally:
-        pass
+    return FirebaseUser(
+        email="test.admin@gmail.com",
+        uid="1",
+        user_role=UserRole.admin,
+        hospital_id=1,
+    )
 
 
 @pytest.fixture()

@@ -21,7 +21,7 @@ ALLOWED_DOCTOR_UPDATES = ["schedule", "specialty_ids"]
 firebase_app = initialize_app()
 
 
-def create_patient(db: Session, user: UserIn) -> User:
+def create_patient(db: Session, user: UserIn, is_test: bool = False) -> User:
     random_password = generate_password()
     hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
 
@@ -33,16 +33,18 @@ def create_patient(db: Session, user: UserIn) -> User:
         db.add(db_user)
         db.add(db_patient)
 
-        firebase_patient: UserInfo = create_user(
-            email=user.email,
-            password=random_password,
-            display_name=f"{user.name} {user.last_name}",
-        )
+        if not is_test:
+            firebase_patient: UserInfo = create_user(
+                email=user.email,
+                password=random_password,
+                display_name=f"{user.name} {user.last_name}",
+            )
 
-        set_custom_user_claims(
-            firebase_patient.uid,
-            {"id": db_user.id, "role": UserRole.patient, "hospital_id": None},
-        )
+            set_custom_user_claims(
+                firebase_patient.uid,
+                {"id": db_user.id, "role": UserRole.patient, "hospital_id": None},
+            )
+            db_user.uid = firebase_patient.uid
 
         db.commit()
         db.refresh(db_user)
@@ -54,7 +56,7 @@ def create_patient(db: Session, user: UserIn) -> User:
         raise Exception(f"Unexpected error: {e}")
 
 
-def create_admin(db: Session, user: UserIn) -> User:
+def create_admin(db: Session, user: UserIn, is_test: bool = False) -> User:
     random_password = generate_password()
     hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
 
@@ -67,19 +69,22 @@ def create_admin(db: Session, user: UserIn) -> User:
         db.add(db_user)
         db.add(db_admin)
 
-        firebase_admin: UserInfo = create_user(
-            email=user.email,
-            password=random_password,
-            display_name=f"{user.name} {user.last_name}",
-        )
+        if not is_test:
+            firebase_admin: UserInfo = create_user(
+                email=user.email,
+                password=random_password,
+                display_name=f"{user.name} {user.last_name}",
+            )
 
-        set_custom_user_claims(
-            firebase_admin.uid,
-            {
-                "id": db_user.id,
-                "role": UserRole.admin,
-            },
-        )
+            set_custom_user_claims(
+                firebase_admin.uid,
+                {
+                    "id": db_user.id,
+                    "role": UserRole.admin,
+                    "hospital_id": db_admin.hospital_id,
+                },
+            )
+            db_user.uid = firebase_admin.uid
 
         db.commit()
         db.refresh(db_user)
@@ -91,7 +96,7 @@ def create_admin(db: Session, user: UserIn) -> User:
         raise Exception(f"Unexpected error: {e}")
 
 
-def create_doctor(db: Session, user: UserIn) -> User:
+def create_doctor(db: Session, user: UserIn, is_test: bool = False) -> User:
     random_password = generate_password()
     hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
 
@@ -111,19 +116,22 @@ def create_doctor(db: Session, user: UserIn) -> User:
         db.add(db_user)
         db.add(db_doctor)
 
-        firebase_doctor: UserInfo = create_user(
-            email=user.email,
-            password=random_password,
-            display_name=f"{user.name} {user.last_name}",
-        )
+        if not is_test:
+            firebase_doctor: UserInfo = create_user(
+                email=user.email,
+                password=random_password,
+                display_name=f"{user.name} {user.last_name}",
+            )
 
-        set_custom_user_claims(
-            firebase_doctor.uid,
-            {
-                "id": db_user.id,
-                "role": UserRole.doctor,
-            },
-        )
+            set_custom_user_claims(
+                firebase_doctor.uid,
+                {
+                    "id": db_user.id,
+                    "role": UserRole.doctor,
+                    "hospital_id": db_doctor.hospital_id,
+                },
+            )
+            db_user.uid = firebase_doctor.uid
 
         db.commit()
         db.refresh(db_doctor)
@@ -139,14 +147,38 @@ def get_user(db: Session, user_id: int) -> User:
     return db.query(User).filter(User.id == user_id).first()
 
 
-def get_users(db: Session, user_role: UserRole = None, hospital_id: int = None) -> List[User]:
+def get_users(
+    db: Session, user_role: UserRole = None, hospital_id: int = None
+) -> List[User]:
     if user_role and hospital_id:
         if user_role.value == UserRole.admin:
-            return db.query(User).join(Admin).filter(User.user_role == user_role.value, Admin.hospital_id == hospital_id).all()
+            return (
+                db.query(User)
+                .join(Admin)
+                .filter(
+                    User.user_role == user_role.value, Admin.hospital_id == hospital_id
+                )
+                .all()
+            )
         elif user_role.value == UserRole.doctor:
-            return db.query(User).join(Doctor).filter(User.user_role == user_role.value, Doctor.hospital_id == hospital_id).all()
+            return (
+                db.query(User)
+                .join(Doctor)
+                .filter(
+                    User.user_role == user_role.value, Doctor.hospital_id == hospital_id
+                )
+                .all()
+            )
     elif hospital_id:
-        return db.query(User).join(Doctor).join(Admin).filter(Doctor.hospital_id == hospital_id or Admin.hospital_id == hospital_id).all()
+        return (
+            db.query(User)
+            .join(Doctor)
+            .join(Admin)
+            .filter(
+                Doctor.hospital_id == hospital_id or Admin.hospital_id == hospital_id
+            )
+            .all()
+        )
     elif user_role:
         return db.query(User).filter(User.user_role == user_role.value).all()
     else:

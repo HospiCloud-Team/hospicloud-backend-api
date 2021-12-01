@@ -8,6 +8,7 @@ from fastapi_cloudauth.firebase import FirebaseClaims
 
 import storage
 from common.schemas.user import UserIn, User, UserRole, UserUpdate, DoctorOut
+from common.schemas.auth import FirebaseUser
 from dependencies import Session, get_db, get_current_user
 
 app = FastAPI(title="Users", description="Users service for HospiCloud app.")
@@ -38,10 +39,7 @@ async def home():
     response_model_exclude_none=True,
     tags=["users"],
 )
-async def register(
-    user: UserIn,
-    db: Session = Depends(get_db),
-):
+async def register(user: UserIn, db: Session = Depends(get_db), test: bool = False):
     try:
         existing_user = storage.get_user_by_email(db, user.email)
         if existing_user:
@@ -50,9 +48,9 @@ async def register(
                 content={"message": "Email is already used"},
             )
         if user.user_role == UserRole.admin:
-            return storage.create_admin(db, user)
+            return storage.create_admin(db, user, test)
         elif user.user_role == UserRole.patient:
-            return storage.create_patient(db, user)
+            return storage.create_patient(db, user, test)
         else:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -77,30 +75,30 @@ async def register(
 async def create_user(
     user: UserIn,
     db: Session = Depends(get_db),
-    current_user: FirebaseClaims = Depends(get_current_user),
+    current_user: FirebaseUser = Depends(get_current_user),
+    test: bool = False,
 ):
     try:
-        current_user: User = storage.get_user_by_email(current_user.email)
         existing_user = storage.get_user_by_email(db, user.email)
         if existing_user:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"message": "Email is already used"},
             )
-        if current_user["role"] == UserRole.admin and user.user_role in [
+        if current_user.user_role == UserRole.admin and user.user_role in [
             UserRole.admin,
             UserRole.doctor,
         ]:
             if (
                 user.user_role == UserRole.doctor
-                and user.doctor.hospital_id == current_user.doctor.hospital_id
+                and user.doctor.hospital_id == current_user.hospital_id
             ):
-                return storage.create_doctor(db, user)
+                return storage.create_doctor(db, user, test)
             elif (
                 user.user_role == UserRole.admin
-                and user.doctor.hospital_id == current_user.admin.hospital_id
+                and user.admin.hospital_id == current_user.hospital_id
             ):
-                return storage.create_admin(db, user)
+                return storage.create_admin(db, user, test)
             else:
                 return JSONResponse(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -127,11 +125,12 @@ async def create_user(
     status_code=status.HTTP_200_OK,
     response_model_exclude_none=True,
     tags=["users"],
+    deprecated=True,
 )
 async def get_doctors_by_hospital_id(
     hospital_id: int,
     db: Session = Depends(get_db),
-    current_user: FirebaseClaims = Depends(get_current_user),
+    current_user: FirebaseUser = Depends(get_current_user),
 ):
     return storage.get_doctors_by_hospital_id(db, hospital_id)
 
@@ -146,15 +145,15 @@ async def get_doctors_by_hospital_id(
 async def get_users(
     db: Session = Depends(get_db),
     user_role: Optional[UserRole] = None,
-    current_user: FirebaseClaims = Depends(get_current_user),
+    current_user: FirebaseUser = Depends(get_current_user),
 ):
-    current_user: User = storage.get_user_by_email(db, current_user.email)
-    current_hospital_id = getattr(current_user, current_user.user_role).hospital_id
+    # current_user: User = storage.get_user_by_email(db, current_user.email)
+    # current_hospital_id = getattr(current_user, current_user.role).hospital_id
     if current_user.user_role == UserRole.admin:
         if user_role and user_role.value != UserRole.patient:
-            return storage.get_users(db, user_role, current_hospital_id)
+            return storage.get_users(db, user_role, current_user.hospital_id)
         else:
-            return storage.get_users(db, hospital_id=current_hospital_id)
+            return storage.get_users(db, hospital_id=current_user.hospital_id)
     else:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -172,12 +171,17 @@ async def get_users(
 async def get_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: FirebaseClaims = Depends(get_current_user),
+    current_user: FirebaseUser = Depends(get_current_user),
 ):
     db_user = storage.get_user(db, user_id)
     if db_user is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"message": "User not found"}
+        )
+    elif current_user.user_role not in [UserRole.admin, UserRole.doctor]:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"message": "User not admin or doctor."},
         )
 
     return db_user
@@ -194,17 +198,39 @@ async def update_user(
     user_id: int,
     user: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: FirebaseClaims = Depends(get_current_user),
+    current_user: FirebaseUser = Depends(get_current_user),
 ):
-    try:
-        db_user = storage.update_user(db, user_id, user)
-        if db_user is None:
-            return JSONResponse(
-                status_code=status.HTTP_404_NOT_FOUND,
-                content={"message": "User not found"},
-            )
+    user = storage.get_user(db, user_id)
 
-        return db_user
+    if not user:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "User not found"},
+        )
+
+    current_hospital_id = None
+    user_hospital_id = None
+
+    if current_user.user_role != UserRole.patient:
+        current_hospital_id = current_user.hospital_id
+
+    if user.user_role != UserRole.patient:
+        user_hospital_id = getattr(user, user.user_role).hospital_id
+
+    try:
+        if (
+            current_user.user_role == UserRole.admin
+            and current_hospital_id == user_hospital_id
+        ) or (
+            current_user.user_role == UserRole.patient and current_user.uid == user.uid
+        ):
+            db_user = storage.update_user(db, user_id, user)
+            return db_user
+        else:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"message": "Operation not allowed."},
+            )
     except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -222,32 +248,39 @@ async def update_user(
 async def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: FirebaseClaims = Depends(get_current_user),
+    current_user: FirebaseUser = Depends(get_current_user),
 ):
-    current_user: User = storage.get_user_by_email(current_user.email)
     user = storage.get_user(db, user_id)
-    current_hospital_id, user_hospital_id = None
+
+    if not user:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "User not found"},
+        )
+
+    current_hospital_id = None
+    user_hospital_id = None
 
     if current_user.user_role != UserRole.patient:
-        current_hospital_id = getattr(current_user, current_user.user_role).hospital_id
+        current_hospital_id = current_user.hospital_id
 
     if user.user_role != UserRole.patient:
-        user_hospital_id = getattr(current_user, current_user.user_role).hospital_id
+        user_hospital_id = getattr(user, user.user_role).hospital_id
 
     try:
         if (
             current_user.user_role == UserRole.admin
             and current_hospital_id == user_hospital_id
         ) or (
-            current_user.user_role == UserRole.patient and current_user.id == user.id
+            current_user.user_role == UserRole.patient and current_user.uid == user.uid
         ):
             db_user = storage.delete_user(db, user_id)
-            if db_user is None:
-                return JSONResponse(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    content={"message": "User not found"},
-                )
             return db_user
+        else:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"message": "Operation not allowed."},
+            )
     except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
