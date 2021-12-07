@@ -1,5 +1,4 @@
 import bcrypt
-import datetime
 import traceback
 from typing import List
 
@@ -17,7 +16,7 @@ ALLOWED_USER_UPDATES = ["name", "last_name", "date_of_birth", "document_number"]
 
 ALLOWED_PATIENT_UPDATES = ["medical_background"]
 
-ALLOWED_DOCTOR_UPDATES = ["schedule", "specialty_ids"]
+ALLOWED_DOCTOR_UPDATES = ["schedule", "specialties"]
 
 firebase_app = initialize_app()
 
@@ -106,11 +105,11 @@ def create_doctor(db: Session, user: UserIn, is_test: bool = False) -> User:
         db_user.created_at = get_current_time()
         db_doctor = Doctor(**user.doctor.dict(exclude={"specialty_ids"}), user=db_user)
 
-        specialties = (
-            db.query(Specialty)
-            .filter(Specialty.id.in_(user.doctor.specialty_ids))
-            .all()
-        )
+        db_doctor = Doctor(
+            **user.doctor.dict(exclude={"specialties"}), user=db_user)
+
+        specialties = db.query(Specialty).filter(
+            Specialty.id.in_(user.doctor.specialties)).all()
 
         db_doctor.specialties = specialties
 
@@ -221,16 +220,23 @@ def update_user(db: Session, user_id: int, updated_user: UserUpdate) -> User:
             if do_key_and_value_exist(key, value) and key in ALLOWED_USER_UPDATES:
                 setattr(user, key, value)
 
-        if updated_user.patient is not None:
+        is_patient_user = updated_user.patient is not None and user.user_role == UserRole.patient
+        is_doctor_user = updated_user.doctor is not None and user.user_role == UserRole.doctor
+
+        if is_patient_user:
             for key, value in dict(updated_user.patient).items():
                 if (
                     do_key_and_value_exist(key, value)
                     and key in ALLOWED_PATIENT_UPDATES
                 ):
                     setattr(user.patient, key, value)
-        elif updated_user.doctor is not None:
+        elif is_doctor_user:
             for key, value in dict(updated_user.doctor).items():
                 if do_key_and_value_exist(key, value) and key in ALLOWED_DOCTOR_UPDATES:
+                    if key == "specialties":
+                        value = db.query(Specialty).filter(
+                            Specialty.id.in_(updated_user.doctor.specialties)).all()
+
                     setattr(user.doctor, key, value)
 
         user.updated_at = get_current_time()

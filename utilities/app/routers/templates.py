@@ -112,3 +112,14 @@ async def delete_template(template_id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal server error, try again later"}
         )
+
+
+@router.get(
+    "/templates/doctors/{doctor_id}",
+    response_model=List[Template],
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["templates"]
+)
+async def get_templates_by_doctor_id(doctor_id: int, db: Session = Depends(get_db)):
+    return templates.get_templates_by_doctor_id(db, doctor_id)
