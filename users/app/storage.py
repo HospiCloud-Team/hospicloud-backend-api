@@ -4,7 +4,8 @@ import traceback
 from typing import List
 
 from firebase_admin import initialize_app
-from firebase_admin.auth import UserInfo, create_user, set_custom_user_claims
+from firebase_admin import auth
+from sqlalchemy import or_
 
 from dependencies import Session
 from common.schemas.user import User, UserIn, UserRole, UserUpdate
@@ -34,15 +35,15 @@ def create_patient(db: Session, user: UserIn, is_test: bool = False) -> User:
         db.add(db_patient)
 
         if not is_test:
-            firebase_patient: UserInfo = create_user(
+            firebase_patient: auth.UserInfo = auth.create_user(
                 email=user.email,
                 password=random_password,
                 display_name=f"{user.name} {user.last_name}",
             )
 
-            set_custom_user_claims(
+            auth.set_custom_user_claims(
                 firebase_patient.uid,
-                {"id": db_user.id, "role": UserRole.patient, "hospital_id": None},
+                {"id": db_user.id, "user_role": UserRole.patient, "hospital_id": None},
             )
             db_user.uid = firebase_patient.uid
 
@@ -70,17 +71,17 @@ def create_admin(db: Session, user: UserIn, is_test: bool = False) -> User:
         db.add(db_admin)
 
         if not is_test:
-            firebase_admin: UserInfo = create_user(
+            firebase_admin: auth.UserInfo = auth.create_user(
                 email=user.email,
                 password=random_password,
                 display_name=f"{user.name} {user.last_name}",
             )
 
-            set_custom_user_claims(
+            auth.set_custom_user_claims(
                 firebase_admin.uid,
                 {
                     "id": db_user.id,
-                    "role": UserRole.admin,
+                    "user_role": UserRole.admin,
                     "hospital_id": db_admin.hospital_id,
                 },
             )
@@ -116,26 +117,25 @@ def create_doctor(db: Session, user: UserIn, is_test: bool = False) -> User:
         db.add(db_user)
         db.add(db_doctor)
 
+        db.commit()
+        db.refresh(db_doctor)
+
         if not is_test:
-            firebase_doctor: UserInfo = create_user(
+            firebase_doctor: auth.UserInfo = auth.create_user(
                 email=user.email,
                 password=random_password,
                 display_name=f"{user.name} {user.last_name}",
             )
 
-            set_custom_user_claims(
+            auth.set_custom_user_claims(
                 firebase_doctor.uid,
                 {
                     "id": db_user.id,
-                    "role": UserRole.doctor,
+                    "user_role": UserRole.doctor,
                     "hospital_id": db_doctor.hospital_id,
                 },
             )
             db_user.uid = firebase_doctor.uid
-
-        db.commit()
-        db.refresh(db_doctor)
-
         return db_user
     except Exception as e:
         db.rollback()
@@ -172,10 +172,10 @@ def get_users(
     elif hospital_id:
         return (
             db.query(User)
-            .join(Doctor)
-            .join(Admin)
+            .outerjoin(Doctor)
+            .outerjoin(Admin)
             .filter(
-                Doctor.hospital_id == hospital_id or Admin.hospital_id == hospital_id
+                or_(Doctor.hospital_id == hospital_id, Admin.hospital_id == hospital_id)
             )
             .all()
         )
@@ -193,12 +193,14 @@ def get_user_by_email(db: Session, email: str) -> User:
         raise Exception(f"Unexpected error: {e}")
 
 
-def delete_user(db: Session, user_id: int) -> User:
+def delete_user(db: Session, user_id: int, test=False) -> User:
     user = get_user(db, user_id)
     if not user:
         return None
 
     try:
+        if not test:
+            auth.delete_user(user.uid)
         db.delete(user)
         db.commit()
     except Exception as e:

@@ -147,8 +147,6 @@ async def get_users(
     user_role: Optional[UserRole] = None,
     current_user: FirebaseUser = Depends(get_current_user),
 ):
-    # current_user: User = storage.get_user_by_email(db, current_user.email)
-    # current_hospital_id = getattr(current_user, current_user.role).hospital_id
     if current_user.user_role == UserRole.admin:
         if user_role and user_role.value != UserRole.patient:
             return storage.get_users(db, user_role, current_user.hospital_id)
@@ -196,7 +194,7 @@ async def get_user(
 )
 async def update_user(
     user_id: int,
-    user: UserUpdate,
+    user_update: UserUpdate,
     db: Session = Depends(get_db),
     current_user: FirebaseUser = Depends(get_current_user),
 ):
@@ -224,7 +222,7 @@ async def update_user(
         ) or (
             current_user.user_role == UserRole.patient and current_user.uid == user.uid
         ):
-            db_user = storage.update_user(db, user_id, user)
+            db_user = storage.update_user(db, user_id, user_update)
             return db_user
         else:
             return JSONResponse(
@@ -249,6 +247,7 @@ async def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: FirebaseUser = Depends(get_current_user),
+    test: bool = False,
 ):
     user = storage.get_user(db, user_id)
 
@@ -274,7 +273,7 @@ async def delete_user(
         ) or (
             current_user.user_role == UserRole.patient and current_user.uid == user.uid
         ):
-            db_user = storage.delete_user(db, user_id)
+            db_user = storage.delete_user(db, user_id, test)
             return db_user
         else:
             return JSONResponse(

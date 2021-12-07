@@ -57,7 +57,7 @@ def test_db():
         created_at=datetime.datetime.now(datetime.timezone.utc),
     )
 
-    admin = Admin(hospital_id=1)
+    admin = Admin(user=admin_user, hospital_id=1)
 
     patient_user = User(
         user_role="patient",
@@ -94,8 +94,8 @@ def test_db():
     ]
 
     doctors = [
-        Doctor(user_id=2, hospital_id=1, schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"),
         Doctor(user_id=3, hospital_id=1, schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"),
+        Doctor(user_id=4, hospital_id=1, schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"),
     ]
 
     hospital = Hospital(

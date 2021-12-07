@@ -1,9 +1,8 @@
 version: '3'
 services:
     utilities:
-        container_name: utilities
         depends_on: 
-            - postgres-db
+            - postgres
         build: 
             context: ./
             dockerfile: utilities/Dockerfile
@@ -12,9 +11,8 @@ services:
         ports:
             - 8080:8080
     checkups:
-        container_name: checkups
         depends_on: 
-            - postgres-db
+            - postgres
         build: 
             context: ./
             dockerfile: checkups/Dockerfile
@@ -23,9 +21,8 @@ services:
         ports:
             - 8081:8081
     users:
-        container_name: users
         depends_on: 
-            - postgres-db
+            - postgres
         build: 
             context: ./
             dockerfile: users/Dockerfile
@@ -37,8 +34,7 @@ services:
             - PROJECT_ID=${PROJECT_ID}
         ports:
             - 8082:8082
-    postgres-db:
-        container_name: postgres-db
+    postgres:
         image: postgres:latest
         restart: always
         environment:
