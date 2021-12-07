@@ -35,12 +35,12 @@ jobs:
 
       - name: Test checkups container
         run: |
-          docker exec checkups pytest -vv
+          docker-compose exec checkups pytest -vv
       
       - name: Test users container
         run: |
-          docker exec users pytest -vv
+          docker-compose exec users pytest -vv
           
       - name: Test utilities container
         run: |
-          docker exec utilities pytest -vv
+          docker-compose exec utilities pytest -vv
