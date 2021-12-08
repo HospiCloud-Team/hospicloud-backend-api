@@ -103,7 +103,6 @@ def create_doctor(db: Session, user: UserIn, is_test: bool = False) -> User:
     try:
         db_user = User(**user.dict(exclude={"doctor"}), password=hashed_password)
         db_user.created_at = get_current_time()
-        db_doctor = Doctor(**user.doctor.dict(exclude={"specialty_ids"}), user=db_user)
 
         db_doctor = Doctor(
             **user.doctor.dict(exclude={"specialties"}), user=db_user)
