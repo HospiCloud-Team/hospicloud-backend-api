@@ -48,6 +48,7 @@ class UserUpdate(BaseModel):
 
 class User(UserBase):
     id: int
+    uid: Optional[str]
     patient: Optional[Patient] = None
     admin: Optional[Admin] = None
     doctor: Optional[Doctor] = None

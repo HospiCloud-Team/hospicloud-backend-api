@@ -24,10 +24,19 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT }}
+          service_account_key: ${{ secrets.GCP_SA_FIREBASE }}
+          export_default_credentials: true
 
       - name: Set up containers
         run: |
           docker-compose -f docker-compose.yml up -d --build
+        env:
+          CREDENTIALS_PATH: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
           
       - name: List containers
         run: |
@@ -35,12 +44,12 @@ jobs:
 
       - name: Test checkups container
         run: |
-          docker exec checkups pytest -vv
+          docker-compose exec -T checkups pytest -vv
       
       - name: Test users container
         run: |
-          docker exec users pytest -vv
+          docker-compose exec -T users pytest -vv
           
       - name: Test utilities container
         run: |
-          docker exec utilities pytest -vv
+          docker-compose exec -T utilities pytest -vv
