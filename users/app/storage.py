@@ -8,7 +8,7 @@ from sqlalchemy import or_
 
 from dependencies import Session
 from common.schemas.user import User, UserIn, UserRole, UserUpdate
-from common.models import Base, Patient, User, Admin, Doctor, Specialty
+from common.models import Base, Patient, User, Admin, Doctor, Specialty, Checkup
 from utils import generate_password
 from common.utils import get_current_time
 
@@ -256,3 +256,14 @@ def do_key_and_value_exist(key, value) -> bool:
 
 def get_doctors_by_hospital_id(db: Session, hospital_id: int) -> List[User]:
     return db.query(User).join(Doctor).filter(Doctor.hospital_id == hospital_id).all()
+
+
+def get_history(db: Session, user_id: int) -> List[User]:
+    user = get_user(db, user_id)
+    if not user:
+        return None
+
+    if user.user_role.name == UserRole.patient.name:
+        return db.query(Checkup).join(Doctor, Doctor.id == Checkup.doctor_id).join(User, User.id == Doctor.user_id).where(user.patient.id)
+
+    return db.query(Checkup).join(Patient, Patient.id == Checkup.patient_id).join(User, User.id == Patient.user_id).where(user.doctor.id)
