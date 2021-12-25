@@ -5,6 +5,7 @@ from typing import List
 from firebase_admin import initialize_app
 from firebase_admin import auth
 from sqlalchemy import or_
+from sqlalchemy.sql import text
 
 from dependencies import Session
 from common.schemas.user import User, UserIn, UserRole, UserUpdate
@@ -12,7 +13,8 @@ from common.models import Base, Patient, User, Admin, Doctor, Specialty, Checkup
 from utils import generate_password
 from common.utils import get_current_time
 
-ALLOWED_USER_UPDATES = ["name", "last_name", "date_of_birth", "document_number"]
+ALLOWED_USER_UPDATES = ["name", "last_name",
+                        "date_of_birth", "document_number"]
 
 ALLOWED_PATIENT_UPDATES = ["medical_background"]
 
@@ -23,10 +25,12 @@ firebase_app = initialize_app()
 
 def create_patient(db: Session, user: UserIn, is_test: bool = False) -> User:
     random_password = generate_password()
-    hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(
+        random_password.encode("utf-8"), bcrypt.gensalt())
 
     try:
-        db_user = User(**user.dict(exclude={"patient"}), password=hashed_password)
+        db_user = User(
+            **user.dict(exclude={"patient"}), password=hashed_password)
         db_user.created_at = get_current_time()
         db_patient = Patient(**user.patient.dict(), user=db_user)
 
@@ -58,10 +62,12 @@ def create_patient(db: Session, user: UserIn, is_test: bool = False) -> User:
 
 def create_admin(db: Session, user: UserIn, is_test: bool = False) -> User:
     random_password = generate_password()
-    hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(
+        random_password.encode("utf-8"), bcrypt.gensalt())
 
     try:
-        db_user = User(**user.dict(exclude={"admin"}), password=hashed_password)
+        db_user = User(
+            **user.dict(exclude={"admin"}), password=hashed_password)
         db_user.created_at = get_current_time()
 
         db_admin = Admin(**user.admin.dict(), user=db_user)
@@ -98,10 +104,12 @@ def create_admin(db: Session, user: UserIn, is_test: bool = False) -> User:
 
 def create_doctor(db: Session, user: UserIn, is_test: bool = False) -> User:
     random_password = generate_password()
-    hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(
+        random_password.encode("utf-8"), bcrypt.gensalt())
 
     try:
-        db_user = User(**user.dict(exclude={"doctor"}), password=hashed_password)
+        db_user = User(
+            **user.dict(exclude={"doctor"}), password=hashed_password)
         db_user.created_at = get_current_time()
 
         db_doctor = Doctor(
@@ -173,7 +181,8 @@ def get_users(
             .outerjoin(Doctor)
             .outerjoin(Admin)
             .filter(
-                or_(Doctor.hospital_id == hospital_id, Admin.hospital_id == hospital_id)
+                or_(Doctor.hospital_id == hospital_id,
+                    Admin.hospital_id == hospital_id)
             )
             .all()
         )
@@ -264,6 +273,52 @@ def get_history(db: Session, user_id: int) -> List[User]:
         return None
 
     if user.user_role.name == UserRole.patient.name:
-        return db.query(Checkup).join(Doctor, Doctor.id == Checkup.doctor_id).join(User, User.id == Doctor.user_id).where(user.patient.id)
+        return get_patient_history(db, user.patient.id)
 
-    return db.query(Checkup).join(Patient, Patient.id == Checkup.patient_id).join(User, User.id == Patient.user_id).where(user.doctor.id)
+    return get_doctor_history(db, user.doctor.id)
+
+
+def get_patient_history(db: Session, patient_id: int) -> List[User]:
+    statement = text("""
+    SELECT
+	    "user".id
+    FROM
+        checkup
+    INNER JOIN doctor
+        ON doctor.id = checkup.doctor_id
+    INNER JOIN "user"
+        ON "user".id = doctor.user_id
+    WHERE
+        patient_id = :patient_id;
+    """)
+
+    parameters = {"patient_id": patient_id}
+
+    output = db.execute(statement, params=parameters).all()
+
+    doctor_ids = [value for (value,) in output]
+
+    return db.query(User).filter(User.id.in_(doctor_ids)).all()
+
+
+def get_doctor_history(db: Session, doctor_id: int) -> List[User]:
+    statement = text("""
+    SELECT
+        "user".id
+    FROM
+        checkup
+    INNER JOIN patient
+        ON patient.id = checkup.patient_id
+    INNER JOIN "user"
+        ON "user".id = patient.user_id
+    WHERE
+        doctor_id = 1;
+    """)
+
+    parameters = {"doctor_id": doctor_id}
+
+    output = db.execute(statement, params=parameters).all()
+
+    patient_ids = [value for (value,) in output]
+
+    return db.query(User).filter(User.id.in_(patient_ids)).all()

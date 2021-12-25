@@ -289,7 +289,7 @@ async def delete_user(
 
 
 @app.get(
-    "/users/history/{user_id}",
+    "/users/{user_id}/history",
     response_model=List[User],
     status_code=status.HTTP_200_OK,
     response_model_exclude_none=True,
@@ -305,5 +305,5 @@ async def get_user_history(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content={"message": "User unathorized"},
         )
-    
+
     return storage.get_history(db, user_id)
