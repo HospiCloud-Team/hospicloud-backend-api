@@ -11,7 +11,8 @@ class CheckupBase(BaseModel):
 
 class CheckupIn(CheckupBase):
     doctor_id: int
-    patient_id: int
+    document_number: Optional[int] = None
+    patient_id: Optional[int] = None
     template_id: int
 
 

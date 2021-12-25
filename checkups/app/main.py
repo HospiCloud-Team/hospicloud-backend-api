@@ -52,6 +52,11 @@ async def read_checkups_by_patient(patient_id: int, db_session=Depends(get_db)):
 async def add_checkup(checkup: CheckupIn, db_session=Depends(get_db)):
     try:
         checkup_db = storage.create_checkup(db_session, checkup)
+        if not checkup_db:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"mesage: missing patient identifier"}
+            )
         return checkup_db
     except sqlalchemy.exc.IntegrityError as err:
         return JSONResponse(
