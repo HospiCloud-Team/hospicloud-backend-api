@@ -68,3 +68,15 @@ def test_create_checkup_with_document_number(test_db):
     assert response.status_code == 201
     assert data["doctor"]["id"] == 1
     assert data["patient"]["id"] == 1
+
+def test_create_checkup_with_document_number_missing(test_db):
+    payload = {
+        "data": "{'test':'test'}",
+        "doctor_id": 1,
+        "document_number": "14",
+        "template_id": 1,
+    }
+
+    response = client.post("/checkups/", json=payload)
+
+    assert response.status_code == 404
