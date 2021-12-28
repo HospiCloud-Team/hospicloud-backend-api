@@ -12,7 +12,8 @@ from common.models import Base, Patient, User, Admin, Doctor, Specialty
 from utils import generate_password
 from common.utils import get_current_time
 
-ALLOWED_USER_UPDATES = ["name", "last_name", "date_of_birth", "document_number"]
+ALLOWED_USER_UPDATES = ["name", "last_name",
+                        "date_of_birth", "document_number"]
 
 ALLOWED_PATIENT_UPDATES = ["medical_background"]
 
@@ -23,10 +24,12 @@ firebase_app = initialize_app()
 
 def create_patient(db: Session, user: UserIn, is_test: bool = False) -> User:
     random_password = generate_password()
-    hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(
+        random_password.encode("utf-8"), bcrypt.gensalt())
 
     try:
-        db_user = User(**user.dict(exclude={"patient"}), password=hashed_password)
+        db_user = User(
+            **user.dict(exclude={"patient"}), password=hashed_password)
         db_user.created_at = get_current_time()
         db_patient = Patient(**user.patient.dict(), user=db_user)
 
@@ -58,10 +61,12 @@ def create_patient(db: Session, user: UserIn, is_test: bool = False) -> User:
 
 def create_admin(db: Session, user: UserIn, is_test: bool = False) -> User:
     random_password = generate_password()
-    hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(
+        random_password.encode("utf-8"), bcrypt.gensalt())
 
     try:
-        db_user = User(**user.dict(exclude={"admin"}), password=hashed_password)
+        db_user = User(
+            **user.dict(exclude={"admin"}), password=hashed_password)
         db_user.created_at = get_current_time()
 
         db_admin = Admin(**user.admin.dict(), user=db_user)
@@ -98,10 +103,12 @@ def create_admin(db: Session, user: UserIn, is_test: bool = False) -> User:
 
 def create_doctor(db: Session, user: UserIn, is_test: bool = False) -> User:
     random_password = generate_password()
-    hashed_password = bcrypt.hashpw(random_password.encode("utf-8"), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(
+        random_password.encode("utf-8"), bcrypt.gensalt())
 
     try:
-        db_user = User(**user.dict(exclude={"doctor"}), password=hashed_password)
+        db_user = User(
+            **user.dict(exclude={"doctor"}), password=hashed_password)
         db_user.created_at = get_current_time()
 
         db_doctor = Doctor(
@@ -141,12 +148,15 @@ def create_doctor(db: Session, user: UserIn, is_test: bool = False) -> User:
         raise Exception(f"Unexpected error: {e}")
 
 
-def get_user(db: Session, user_id: int) -> User:
-    return db.query(User).filter(User.id == user_id).first()
+def get_user(db: Session, user_id: int = None, document_number: str = None) -> User:
+    if user_id:
+        return db.query(User).filter(User.id == user_id).first()
+
+    return db.query(User).filter(User.document_number == document_number).first()
 
 
 def get_users(
-    db: Session, user_role: UserRole = None, hospital_id: int = None
+    db: Session, user_role: UserRole = None, hospital_id: int = None,
 ) -> List[User]:
     if user_role and hospital_id:
         if user_role.value == UserRole.admin:
@@ -173,7 +183,8 @@ def get_users(
             .outerjoin(Doctor)
             .outerjoin(Admin)
             .filter(
-                or_(Doctor.hospital_id == hospital_id, Admin.hospital_id == hospital_id)
+                or_(Doctor.hospital_id == hospital_id,
+                    Admin.hospital_id == hospital_id)
             )
             .all()
         )
