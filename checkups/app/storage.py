@@ -13,7 +13,10 @@ def get_checkups_by_patient(db: Session, patient_id: int) -> List[Checkup]:
     return db.query(Checkup).filter(Checkup.patient_id == patient_id).all()
 
 
-def get_checkups_by_doctor(db: Session, doctor_id: int) -> List[Checkup]:
+def get_checkups_by_doctor(db: Session, doctor_id: int, patient_id: int = None) -> List[Checkup]:
+    if patient_id:
+        return db.query(Checkup).filter(Checkup.doctor_id == doctor_id, Checkup.patient_id == patient_id).all()
+
     return db.query(Checkup).filter(Checkup.doctor_id == doctor_id).all()
 
 
