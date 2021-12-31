@@ -38,8 +38,8 @@ async def read_checkups_by_doctor(doctor_id: int, patient_id: Optional[int] = No
     status_code=status.HTTP_200_OK,
     tags=["checkups"],
 )
-async def read_checkups_by_patient(patient_id: int, db_session=Depends(get_db)):
-    checkups = storage.get_checkups_by_patient(db_session, patient_id)
+async def read_checkups_by_patient(patient_id: int, doctor_id: Optional[int] = None, db_session=Depends(get_db)):
+    checkups = storage.get_checkups_by_patient(db_session, patient_id, doctor_id)
     return checkups
 
 
