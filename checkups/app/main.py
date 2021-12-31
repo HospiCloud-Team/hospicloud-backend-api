@@ -3,7 +3,7 @@ from common import models, database
 from common.models import create_tables
 from dependencies import get_db
 import storage
-from typing import List
+from typing import List, Optional
 from common.schemas.checkup import Checkup, CheckupIn
 from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
@@ -28,8 +28,8 @@ app.add_middleware(
     status_code=status.HTTP_200_OK,
     tags=["checkups"],
 )
-async def read_checkups_by_doctor(doctor_id: int, db_session=Depends(get_db)):
-    checkups = storage.get_checkups_by_doctor(db_session, doctor_id)
+async def read_checkups_by_doctor(doctor_id: int, patient_id: Optional[int] = None, db_session=Depends(get_db)):
+    checkups = storage.get_checkups_by_doctor(db_session, doctor_id, patient_id)
     return checkups
 
 
