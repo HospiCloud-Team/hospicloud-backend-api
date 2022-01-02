@@ -200,6 +200,18 @@ def test_get_doctors_by_hospital_id(test_db):
     assert len(data) == 2
 
 
+def test_get_user_by_document_number(test_db):
+    response = client.get(
+        "/users/document-number/12345654322",
+        headers={"Authorization": "Bearer test-token"},
+    )
+
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert data["document_number"] == "12345654322"
+
+
 def test_get_user_medical_history(test_db):
     app.dependency_overrides[get_current_user] = override_get_current_patient_user
 

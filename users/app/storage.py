@@ -149,12 +149,15 @@ def create_doctor(db: Session, user: UserIn, is_test: bool = False) -> User:
         raise Exception(f"Unexpected error: {e}")
 
 
-def get_user(db: Session, user_id: int) -> User:
-    return db.query(User).filter(User.id == user_id).first()
+def get_user(db: Session, user_id: int = None, document_number: str = None) -> User:
+    if user_id:
+        return db.query(User).filter(User.id == user_id).first()
+
+    return db.query(User).filter(User.document_number == document_number).first()
 
 
 def get_users(
-    db: Session, user_role: UserRole = None, hospital_id: int = None
+    db: Session, user_role: UserRole = None, hospital_id: int = None,
 ) -> List[User]:
     if user_role and hospital_id:
         if user_role.value == UserRole.admin:
