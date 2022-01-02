@@ -53,6 +53,22 @@ def test_get_checkups_by_doctor(test_db):
     assert len(data) > 0
 
 
+def test_get_checkups_by_doctor_from_specified_patient(test_db):
+    response = client.get("/checkups/doctor/1?patient_id=1")
+
+    data = response.json()
+
+    assert response.status_code == 200
+    assert len(data) == 2
+
+
+def test_get_checkups_by_patient_from_specified_doctor(test_db):
+    response = client.get("/checkups/patient/1?doctor_id=1")
+
+    data = response.json()
+
+    assert response.status_code == 200
+    assert len(data) == 2
 def test_create_checkup_with_document_number(test_db):
     payload = {
         "data": "{'test':'test'}",

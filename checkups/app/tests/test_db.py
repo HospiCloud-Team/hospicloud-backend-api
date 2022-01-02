@@ -5,7 +5,7 @@ import pytest
 
 from main import app
 from common.database import start_engine
-from common.models import Base, User, Patient, Doctor, Template, Hospital
+from common.models import Base, User, Patient, Doctor, Template, Hospital, Checkup
 from dependencies import get_db
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -52,7 +52,16 @@ def test_db():
 
     hospital = Hospital(name="Public hospital")
 
-    patient = Patient(user=patient_user, blood_type="a_plus")
+    patients = [
+        Patient(
+            user=patient_user,
+            blood_type="a_plus"
+        ),
+        Patient(
+            user=patient_user,
+            blood_type="b_plus"
+        )
+    ]
 
     template = Template(
         numeric_fields=0,
@@ -60,15 +69,35 @@ def test_db():
         file_upload_fields=0,
         headers="{'test':'str'}",
     )
+
+    checkups = [
+        Checkup(
+            template_id=1,
+            doctor_id=1,
+            patient_id=1,
+            data="{'test':'str'}"
+        ),
+        Checkup(
+            template_id=1,
+            doctor_id=1,
+            patient_id=1,
+            data="{'test2':'str'}"
+        ),
+        Checkup(
+            template_id=1,
+            doctor_id=1,
+            patient_id=2
+        )
+    ]
+
     db.add(doctor_user)
     db.add(patient_user)
     db.add(hospital)
     db.add(doctor)
-    db.add(patient)
+    db.add_all(patients)
     db.add(template)
+    db.add_all(checkups)
     db.commit()
-    db.refresh(doctor)
-    db.refresh(patient)
     yield
     Base.metadata.drop_all(bind=engine)
 
