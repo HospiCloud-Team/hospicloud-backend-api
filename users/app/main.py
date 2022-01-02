@@ -174,7 +174,8 @@ async def get_user(
     db_user = storage.get_user(db, user_id)
     if db_user is None:
         return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND, content={"message": "User not found"}
+            status_code=status.HTTP_404_NOT_FOUND, content={
+                "message": "User not found"}
         )
     elif current_user.user_role not in [UserRole.admin, UserRole.doctor]:
         return JSONResponse(
@@ -285,3 +286,24 @@ async def delete_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal server error, try again later"},
         )
+
+
+@app.get(
+    "/users/{user_id}/history",
+    response_model=List[User],
+    status_code=status.HTTP_200_OK,
+    response_model_exclude_none=True,
+    tags=["users"]
+)
+async def get_user_history(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: FirebaseUser = Depends(get_current_user)
+):
+    if current_user.user_role not in [UserRole.patient, UserRole.doctor]:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"message": "User unathorized"},
+        )
+
+    return storage.get_history(db, user_id)

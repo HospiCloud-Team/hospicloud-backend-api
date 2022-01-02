@@ -1,8 +1,9 @@
 from fastapi.testclient import TestClient
 from fastapi import responses, status
+from common.schemas.auth import FirebaseUser
 from main import app
 from dependencies import get_db, get_current_user
-from tests.test_db import test_db, override_get_db, override_get_current_user
+from tests.test_db import test_db, override_get_db, override_get_current_user, override_get_current_patient_user
 
 app.dependency_overrides[get_db] = override_get_db
 
@@ -24,7 +25,7 @@ def test_register(test_db):
     }
 
     response = client.post("/register?test=True", json=payload)
-    print(response.json())
+
     assert response.status_code == status.HTTP_201_CREATED
 
 
@@ -191,6 +192,19 @@ def test_update_doctor(test_db):
 def test_get_doctors_by_hospital_id(test_db):
     response = client.get(
         "/users/doctors?hospital_id=1",
+        headers={"Authorization": "Bearer test-token"},
+    )
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 2
+
+
+def test_get_user_medical_history(test_db):
+    app.dependency_overrides[get_current_user] = override_get_current_patient_user
+
+    response = client.get(
+        "/users/2/history",
         headers={"Authorization": "Bearer test-token"},
     )
     data = response.json()
