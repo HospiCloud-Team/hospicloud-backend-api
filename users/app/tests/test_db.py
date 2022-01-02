@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pytest
 from common.database import start_engine
-from common.models import Base, Hospital, User, Patient, Specialty, Doctor, Admin
+from common.models import Base, Hospital, User, Patient, Specialty, Doctor, Admin, Checkup
 from common.schemas.auth import FirebaseUser
 from common.schemas.user import UserRole
 
@@ -15,7 +15,8 @@ engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine)
 
 
 class CurrentUser(BaseModel):
@@ -37,6 +38,14 @@ def override_get_current_user():
         uid="1",
         user_role=UserRole.admin,
         hospital_id=1,
+    )
+
+def override_get_current_patient_user():
+    return FirebaseUser(
+        email="test.patient@gmail.com",
+        uid="1",
+        user_role=UserRole.patient,
+        hospital_id=1
     )
 
 
@@ -94,8 +103,10 @@ def test_db():
     ]
 
     doctors = [
-        Doctor(user_id=3, hospital_id=1, schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"),
-        Doctor(user_id=4, hospital_id=1, schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"),
+        Doctor(user_id=3, hospital_id=1,
+               schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"),
+        Doctor(user_id=4, hospital_id=1,
+               schedule="L, X, V 8:00 - 12:00, 4:00 - 6:00"),
     ]
 
     hospital = Hospital(
@@ -108,6 +119,11 @@ def test_db():
         Specialty(name="general", hospital_id=1),
     ]
 
+    checkups = [
+        Checkup(doctor_id=1, patient_id=1),
+        Checkup(doctor_id=2, patient_id=1)
+    ]
+
     db.add(admin_user)
     db.add(admin)
     db.add(patient_user)
@@ -116,6 +132,7 @@ def test_db():
     db.bulk_save_objects(specialties)
     db.add_all(doctor_users)
     db.add_all(doctors)
+    db.add_all(checkups)
     db.commit()
 
     yield

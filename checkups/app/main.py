@@ -1,4 +1,5 @@
 import sqlalchemy
+from sqlalchemy.orm.exc import NoResultFound
 from common import models, database
 from common.models import create_tables
 from dependencies import get_db
@@ -51,8 +52,12 @@ async def read_checkups_by_patient(patient_id: int, db_session=Depends(get_db)):
 )
 async def add_checkup(checkup: CheckupIn, db_session=Depends(get_db)):
     try:
-        checkup_db = storage.create_checkup(db_session, checkup)
-        return checkup_db
+        return storage.create_checkup(db_session, checkup)
+    except NoResultFound:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"mesage": "missing patient identifier"},
+        )
     except sqlalchemy.exc.IntegrityError as err:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,

@@ -5,10 +5,11 @@ from typing import List
 from firebase_admin import initialize_app
 from firebase_admin import auth
 from sqlalchemy import or_
+from sqlalchemy.sql import text
 
 from dependencies import Session
 from common.schemas.user import User, UserIn, UserRole, UserUpdate
-from common.models import Base, Patient, User, Admin, Doctor, Specialty
+from common.models import Base, Patient, User, Admin, Doctor, Specialty, Checkup
 from utils import generate_password
 from common.utils import get_current_time
 
@@ -267,3 +268,60 @@ def do_key_and_value_exist(key, value) -> bool:
 
 def get_doctors_by_hospital_id(db: Session, hospital_id: int) -> List[User]:
     return db.query(User).join(Doctor).filter(Doctor.hospital_id == hospital_id).all()
+
+
+def get_history(db: Session, user_id: int) -> List[User]:
+    user = get_user(db, user_id)
+    if not user:
+        return None
+
+    if user.user_role.name == UserRole.patient.name:
+        return get_patient_history(db, user.patient.id)
+
+    return get_doctor_history(db, user.doctor.id)
+
+
+def get_patient_history(db: Session, patient_id: int) -> List[User]:
+    statement = text("""
+    SELECT
+	    "user".id
+    FROM
+        checkup
+    INNER JOIN doctor
+        ON doctor.id = checkup.doctor_id
+    INNER JOIN "user"
+        ON "user".id = doctor.user_id
+    WHERE
+        patient_id = :patient_id;
+    """)
+
+    parameters = {"patient_id": patient_id}
+
+    output = db.execute(statement, params=parameters).all()
+
+    doctor_ids = [value for (value,) in output]
+
+    return db.query(User).filter(User.id.in_(doctor_ids)).all()
+
+
+def get_doctor_history(db: Session, doctor_id: int) -> List[User]:
+    statement = text("""
+    SELECT
+        "user".id
+    FROM
+        checkup
+    INNER JOIN patient
+        ON patient.id = checkup.patient_id
+    INNER JOIN "user"
+        ON "user".id = patient.user_id
+    WHERE
+        doctor_id = 1;
+    """)
+
+    parameters = {"doctor_id": doctor_id}
+
+    output = db.execute(statement, params=parameters).all()
+
+    patient_ids = [value for (value,) in output]
+
+    return db.query(User).filter(User.id.in_(patient_ids)).all()

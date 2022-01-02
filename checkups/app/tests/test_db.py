@@ -31,7 +31,7 @@ def test_db():
         name="test",
         last_name="test",
         email="test@doctor",
-        document_number="12345654321",
+        document_number="12345654322",
         date_of_birth=datetime.datetime.strptime("01-20-2000", "%m-%d-%Y"),
     )
 
