@@ -68,13 +68,6 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT }}
           service_account_key: ${{ secrets.GCP_SA_DEPLOYER }}
           export_default_credentials: true
-      
-      - name: Deploy Appointments Service to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v0.3.0
-        with:
-          image: ${{ env.REGISTRY_NAME }}${{ env.PROJECT_NAME }}-appointments:${{ env.VERSION }}
-          service: ${{ env.PROJECT_NAME }}-appointments
-          region: us-east1
           
       - name: Deploy Checkups Service to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v0.3.0
