@@ -37,6 +37,9 @@ def create_patient(db: Session, user: UserIn, is_test: bool = False) -> User:
         db.add(db_user)
         db.add(db_patient)
 
+        db.commit()
+        db.refresh(db_user)
+
         if not is_test:
             firebase_patient: auth.UserInfo = auth.create_user(
                 email=user.email,
@@ -49,9 +52,6 @@ def create_patient(db: Session, user: UserIn, is_test: bool = False) -> User:
                 {"id": db_user.id, "user_role": UserRole.patient, "hospital_id": None},
             )
             db_user.uid = firebase_patient.uid
-
-        db.commit()
-        db.refresh(db_user)
 
         return db_user
     except Exception as e:
@@ -75,6 +75,9 @@ def create_admin(db: Session, user: UserIn, is_test: bool = False) -> User:
         db.add(db_user)
         db.add(db_admin)
 
+        db.commit()
+        db.refresh(db_user)
+
         if not is_test:
             firebase_admin: auth.UserInfo = auth.create_user(
                 email=user.email,
@@ -91,9 +94,6 @@ def create_admin(db: Session, user: UserIn, is_test: bool = False) -> User:
                 },
             )
             db_user.uid = firebase_admin.uid
-
-        db.commit()
-        db.refresh(db_user)
 
         return db_user
     except Exception as e:
@@ -142,6 +142,7 @@ def create_doctor(db: Session, user: UserIn, is_test: bool = False) -> User:
                 },
             )
             db_user.uid = firebase_doctor.uid
+
         return db_user
     except Exception as e:
         db.rollback()
