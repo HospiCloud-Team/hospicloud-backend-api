@@ -177,11 +177,6 @@ async def get_user(
             status_code=status.HTTP_404_NOT_FOUND, content={
                 "message": "User not found"}
         )
-    elif current_user.user_role not in [UserRole.admin, UserRole.doctor]:
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"message": "User not admin or doctor."},
-        )
 
     return db_user
 
